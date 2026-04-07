@@ -1,8 +1,8 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>Sojourn — The best way to spend your money, wherever you are.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -727,12 +727,37 @@
     .mockup-grid > div:first-child p { margin-left: auto; margin-right: auto; }
   }
 
+  .phone-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+
+  .mockup-section-grid {
+    max-width: 960px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .mockup-section-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      text-align: center;
+    }
+    .mockup-section-grid > div:first-child p { margin-left: auto; margin-right: auto; }
+    .mockup-section-grid > div:last-child { display: flex; justify-content: center; }
+    .phone-wrapper { justify-content: center; }
+    .sj-phone { width: 100%; max-width: 300px; border-radius: 20px; }
+  }
+
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
@@ -743,6 +768,14 @@
     .proof-inner { grid-template-columns: 1fr; gap: 2rem; }
     footer { flex-direction: column; text-align: center; }
     .footer-links { justify-content: center; }
+    .hero { padding: 7rem 1.5rem 4rem; }
+    .hero h1 { font-size: clamp(2.2rem, 8vw, 3.5rem); }
+    .hero-sub { font-size: 1rem; }
+    .how { padding: 5rem 1.5rem; }
+    .proof { padding: 4rem 1.5rem; }
+    .bottom-cta { padding: 5rem 1.5rem; }
+    .plane { display: none; }
+    .plane-trail { display: none; }
   }
 
   @media (max-width: 520px) {
@@ -752,6 +785,7 @@
       border-top: 1px solid var(--rule);
       padding: 0.9rem;
     }
+    .sj-phone { max-width: 100%; }
   }
 </style>
 </head>
@@ -826,13 +860,13 @@
 
 <!-- MOCKUP -->
 <section style="padding: 5rem 2rem; background: var(--bg-warm); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);">
-  <div style="max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+  <div class="mockup-section-grid">
     <div>
       <p class="section-label">See it in action</p>
       <h2 style="font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: var(--ink); line-height: 1.15; margin-bottom: 1.25rem;">Your budget.<br>Your priorities.<br><em>Instantly balanced.</em></h2>
       <p style="font-size: 0.92rem; font-weight: 300; color: var(--ink-mid); line-height: 1.8; max-width: 36ch;">Drag any slider. Every other category rebalances proportionally in real time — automatically, instantly, the way it should be.</p>
     </div>
-    <div style="display: flex; justify-content: center;">
+    <div class="phone-wrapper">
       <div class="sj-phone">
         <div class="sj-accent-bar"></div>
         <div class="sj-statusbar">
