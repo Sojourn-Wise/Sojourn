@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Sojourn — The best way to spend your money, wherever you are.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #FAF8F5;
+    --bg-warm:   #F3EFE8;
+    --bg-card:   #FFFFFF;
+    --ink:       #1A1A2E;
+    --ink-mid:   #4A4A5A;
+    --ink-light: #8A8A9A;
+    --brand:     #2C5F8C;
+    --brand-mid: #1A3D5C;
+    --accent:    #C8A96A;
+    --accent-lt: #F7F0E3;
+    --rule:      #E2DDD6;
+    --radius:    4px;
+    --radius-lg: 12px;
+    --ease:      cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── PLANE ── */
+  .plane-wrapper {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 200;
+  }
+
+
+
+
+  .plane {
+    position: fixed;
+    width: 34px;
+    top: 68px;
+    left: -60px;
+    opacity: 0;
+    z-index: 200;
+    pointer-events: none;
+    animation: flyUnderLogo 26s linear infinite;
+    animation-delay: 2s;
+  }
+  @keyframes flyUnderLogo {
+    0%   { left: -60px;              opacity: 0;    transform: rotate(-2deg) translateY(0px); }
+    5%   {                            opacity: 0.22; }
+    35%  {                                           transform: rotate(-1deg) translateY(3px); }
+    65%  {                                           transform: rotate(-2deg) translateY(1px); }
+    92%  {                            opacity: 0.22; }
+    100% { left: calc(100vw + 80px); opacity: 0;    transform: rotate(-1deg) translateY(4px); }
+  }
+  .plane-trail {
+    position: fixed;
+    top: 79px;
+    left: -180px;
+    height: 1px;
+    width: 120px;
+    z-index: 199;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, rgba(44,95,140,0.25), transparent);
+    opacity: 0;
+    animation: trailUnderLogo 26s linear infinite;
+    animation-delay: 2s;
+  }
+  @keyframes trailUnderLogo {
+    0%   { left: -180px;             opacity: 0;   }
+    5%   {                            opacity: 0.9; }
+    92%  {                            opacity: 0.9; }
+    100% { left: calc(100vw + 20px); opacity: 0;   }
+  }
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 2.5rem;
+    background: rgba(250, 248, 245, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s ease;
+    overflow: visible;
+  }
+  nav.scrolled { border-color: var(--rule); }
+
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--ink-mid);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  .nav-cta {
+    background: var(--ink) !important;
+    color: var(--bg) !important;
+    padding: 0.5rem 1.25rem !important;
+    border-radius: var(--radius) !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.02em !important;
+    transition: background 0.2s, transform 0.15s !important;
+  }
+  .nav-cta:hover {
+    background: var(--brand-mid) !important;
+    transform: translateY(-1px);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 5rem;
+    position: relative;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-lt);
+    border: 1px solid rgba(200, 169, 106, 0.3);
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeUp 0.7s var(--ease) 0.2s forwards;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    max-width: 14ch;
+    margin: 0 auto 1.75rem;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.8s var(--ease) 0.35s forwards;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--brand);
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-weight: 300;
+    color: var(--ink-mid);
+    max-width: 44ch;
+    line-height: 1.7;
+    margin: 0 auto 2.75rem;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.8s var(--ease) 0.5s forwards;
+  }
+
+  /* ── WAITLIST FORM ── */
+  .waitlist-form {
+    display: flex;
+    gap: 0;
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+    border: 1.5px solid var(--rule);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-card);
+    box-shadow: 0 4px 24px rgba(26, 26, 46, 0.06);
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.8s var(--ease) 0.65s forwards;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .waitlist-form:focus-within {
+    border-color: var(--brand);
+    box-shadow: 0 4px 32px rgba(44, 95, 140, 0.12);
+  }
+
+  .waitlist-form input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0.9rem 1.25rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--ink);
+    background: transparent;
+  }
+  .waitlist-form input::placeholder { color: var(--ink-light); }
+
+  .waitlist-form button {
+    border: none;
+    border-left: 1px solid var(--rule);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 0.9rem 1.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+  }
+  .waitlist-form button:hover { background: var(--brand-mid); }
+
+  .hero-fine {
+    margin-top: 1.2rem;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    letter-spacing: 0.02em;
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 0.8s forwards;
+  }
+
+  .hero-fine strong {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── SUCCESS STATE ── */
+  .success-msg {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    background: #EAF5EE;
+    border: 1px solid #9FD4B3;
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
+    color: #1A5C36;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .success-msg.visible { display: flex; }
+  .success-icon {
+    width: 20px; height: 20px;
+    background: #1A5C36;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .success-icon::after {
+    content: '';
+    width: 10px; height: 6px;
+    border-left: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(-45deg) translate(1px, -1px);
+    display: block;
+  }
+
+  /* ── SCROLL INDICATOR ── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.7s var(--ease) 1.2s forwards;
+  }
+  .scroll-hint span {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--ink-light), transparent);
+    animation: scrollDrop 1.8s ease-in-out infinite 1.5s;
+  }
+  @keyframes scrollDrop {
+    0% { transform: scaleY(0); transform-origin: top; opacity: 1; }
+    50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+    51% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  }
+
+  /* ── SECTION SHARED ── */
+  section { position: relative; z-index: 1; }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    padding: 7rem 2rem;
+    background: var(--bg-warm);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .how-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .how-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 5rem;
+  }
+
+  .how-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--ink);
+    max-width: 20ch;
+  }
+
+  .how-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    position: relative;
+  }
+
+  .how-steps::before {
+    content: '';
+    position: absolute;
+    top: 2.25rem;
+    left: calc(33.33% / 2);
+    right: calc(33.33% / 2);
+    height: 1px;
+    background: var(--rule);
+    z-index: 0;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 2.5rem;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+  }
+  .step.visible { opacity: 1; transform: translateY(0); }
+  .step:nth-child(2) { transition-delay: 0.12s; }
+  .step:nth-child(3) { transition-delay: 0.24s; }
+
+  .step-num {
+    width: 4.5rem; height: 4.5rem;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--brand);
+    margin-bottom: 2rem;
+    flex-shrink: 0;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .step:hover .step-num {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: white;
+  }
+
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .step-desc {
+    font-size: 0.92rem;
+    font-weight: 300;
+    color: var(--ink-mid);
+    line-height: 1.65;
+    max-width: 22ch;
+    margin: 0 auto;
+  }
+
+  /* ── USE CASES ── */
+  .use-cases {
+    padding: 7rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .use-cases-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+  .use-cases-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .cases-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .case-card {
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s var(--ease), box-shadow 0.3s ease;
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .case-card.visible { opacity: 1; transform: translateY(0); }
+  .case-card:nth-child(2) { transition-delay: 0.1s; }
+  .case-card:nth-child(3) { transition-delay: 0.2s; }
+  .case-card:nth-child(4) { transition-delay: 0.3s; }
+  .case-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(26, 26, 46, 0.08);
+  }
+
+  .case-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s var(--ease);
+  }
+  .case-card:hover::before { transform: scaleX(1); }
+
+  .case-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brand);
+    background: rgba(44, 95, 140, 0.08);
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    margin-bottom: 1.25rem;
+  }
+
+  .case-scenario {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: 1rem;
+  }
+
+  .case-outcome {
+    font-size: 0.88rem;
+    font-weight: 300;
+    color: var(--ink-mid);
+    line-height: 1.7;
+  }
+
+  .case-amount {
+    display: inline-block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--accent);
+    line-height: 1;
+    margin-top: 1.5rem;
+  }
+
+  /* ── SOCIAL PROOF ── */
+  .proof {
+    background: var(--bg-warm);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 5rem 2rem;
+    text-align: center;
+  }
+
+  .proof-stat {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 300;
+    color: var(--brand);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .proof-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+  }
+
+  .proof-item { display: flex; flex-direction: column; align-items: center; }
+  .proof-label {
+    font-size: 0.85rem;
+    color: var(--ink-mid);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── BOTTOM CTA ── */
+  .bottom-cta {
+    padding: 8rem 2rem;
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .bottom-cta h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+
+  .bottom-cta p {
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--ink-mid);
+    margin-bottom: 2.5rem;
+    max-width: 40ch;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .footer-copy {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    font-weight: 300;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+  }
+  .footer-links a {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    text-decoration: none;
+    transition: color 0.2s;
+    font-weight: 300;
+  }
+  .footer-links a:hover { color: var(--ink); }
+
+  /* ── PHONE MOCKUP ── */
+  .sj-phone {
+    width: 280px;
+    background: #FAF8F5;
+    border-radius: 28px;
+    border: 1.5px solid #E2DDD6;
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 20px 60px rgba(26,26,46,0.10);
+  }
+  .sj-accent-bar { height: 3px; background: #C8A96A; width: 100%; }
+  .sj-statusbar {
+    background: #FAF8F5;
+    padding: 10px 18px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sj-statusbar span { font-size: 10px; color: #8A8A9A; font-weight: 500; letter-spacing: 0.04em; }
+  .sj-header { padding: 8px 18px 14px; border-bottom: 1px solid #E2DDD6; }
+  .sj-trip-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .sj-dest { font-size: 17px; font-weight: 500; color: #1A1A2E; letter-spacing: -0.02em; }
+  .sj-nights { font-size: 10px; color: #8A8A9A; }
+  .sj-budget-display { margin-top: 4px; display: flex; align-items: baseline; gap: 4px; }
+  .sj-budget-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: #2C5F8C; }
+  .sj-budget-label { font-size: 10px; color: #8A8A9A; letter-spacing: 0.06em; text-transform: uppercase; }
+  .sj-body { padding: 14px 18px 18px; }
+  .sj-section-label { font-size: 8px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #8A8A9A; margin-bottom: 12px; }
+  .sj-slider-row { margin-bottom: 12px; }
+  .sj-slider-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .sj-cat-name { font-size: 11px; font-weight: 500; color: #1A1A2E; }
+  .sj-cat-vals { display: flex; align-items: baseline; gap: 4px; }
+  .sj-cat-amt { font-size: 11px; font-weight: 500; color: #2C5F8C; }
+  .sj-cat-pct { font-size: 9px; color: #8A8A9A; }
+  .sj-track { position: relative; height: 3px; background: #E2DDD6; border-radius: 2px; margin-bottom: 2px; }
+  .sj-fill { position: absolute; left: 0; top: 0; bottom: 0; background: #2C5F8C; border-radius: 2px; transition: width 0.1s ease; }
+  .sj-input { position: absolute; top: -7px; left: 0; right: 0; width: 100%; height: 16px; opacity: 0; cursor: pointer; margin: 0; }
+  .sj-thumb { position: absolute; top: 50%; transform: translate(-50%,-50%); width: 11px; height: 11px; background: #FAF8F5; border: 2px solid #2C5F8C; border-radius: 50%; pointer-events: none; transition: left 0.1s ease; }
+  .sj-divider { height: 1px; background: #E2DDD6; margin: 12px 0; }
+  .sj-total-row { display: flex; justify-content: space-between; align-items: center; }
+  .sj-total-label { font-size: 10px; color: #8A8A9A; }
+  .sj-remaining { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 100px; border: 1px solid #E2DDD6; color: #1A1A2E; transition: all 0.2s; }
+  .sj-remaining.over { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+  .sj-remaining.good { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
+  .sj-cta { margin-top: 12px; width: 100%; background: #1A1A2E; color: #FAF8F5; border: none; border-radius: 8px; padding: 10px; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; cursor: pointer; }
+
+  @media (max-width: 768px) {
+    .mockup-grid { grid-template-columns: 1fr !important; text-align: center; }
+    .mockup-grid > div:first-child p { margin-left: auto; margin-right: auto; }
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .how-steps { grid-template-columns: 1fr; gap: 3rem; }
+    .how-steps::before { display: none; }
+    .step { padding: 0; }
+    .cases-grid { grid-template-columns: 1fr !important; }
+    .proof-inner { grid-template-columns: 1fr; gap: 2rem; }
+    footer { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; }
+    .hero { padding: 7rem 1.5rem 4rem; }
+    .hero h1 { font-size: clamp(2.2rem, 8vw, 3.5rem); }
+    .hero-sub { font-size: 1rem; }
+    .mockup-section-grid {
+      grid-template-columns: 1fr !important;
+      gap: 2.5rem !important;
+      text-align: center;
+    }
+    .mockup-section-grid > div:first-child p { margin-left: auto; margin-right: auto; }
+    .mockup-section-grid > div:last-child { justify-content: center; }
+    .sj-phone { width: 100%; max-width: 320px; border-radius: 20px; }
+    .how { padding: 5rem 1.5rem; }
+    .proof { padding: 4rem 1.5rem; }
+    .bottom-cta { padding: 5rem 1.5rem; }
+    .plane { display: none; }
+    .plane-trail { display: none; }
+  }
+
+  @media (max-width: 520px) {
+    .waitlist-form { flex-direction: column; border-radius: var(--radius); }
+    .waitlist-form button {
+      border-left: none;
+      border-top: 1px solid var(--rule);
+      padding: 0.9rem;
+    }
+    .sj-phone { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PLANE -->
+<div class="plane-wrapper">
+  <div class="plane-trail"></div>
+  <svg class="plane" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <!-- fuselage -->
+    <path d="M8 52 C8 52 55 50 88 48 C92 48 94 50 92 52 C90 54 88 54 84 53 L55 52 L8 52Z"
+          fill="#2C5F8C"/>
+    <!-- nose -->
+    <path d="M84 53 C84 53 96 52 98 50 C100 48 96 46 90 47 L84 49Z"
+          fill="#1A3D5C"/>
+    <!-- main wing -->
+    <path d="M40 52 L30 30 C29 27 32 26 34 28 L58 50 Z"
+          fill="#2C5F8C"/>
+    <path d="M40 52 L34 72 C33 75 36 76 38 73 L58 54 Z"
+          fill="#3A6F9C" opacity="0.7"/>
+    <!-- tail fin vertical -->
+    <path d="M14 52 L10 38 C9 35 13 34 15 37 L20 51 Z"
+          fill="#1A3D5C"/>
+    <!-- tail fin horizontal -->
+    <path d="M12 52 L8 60 C7 63 11 64 13 61 L20 53 Z"
+          fill="#2C5F8C" opacity="0.8"/>
+    <!-- engine -->
+    <ellipse cx="48" cy="44" rx="5" ry="3" fill="#1A3D5C" opacity="0.6"/>
+    <!-- window row -->
+    <circle cx="70" cy="50" r="2" fill="#FAF8F5" opacity="0.5"/>
+    <circle cx="62" cy="50.5" r="2" fill="#FAF8F5" opacity="0.5"/>
+    <circle cx="54" cy="51" r="2" fill="#FAF8F5" opacity="0.5"/>
+  </svg>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">Sojourn</a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#use-cases">Use cases</a></li>
+    <li><a href="#waitlist" class="nav-cta">Get early access</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <span class="hero-eyebrow">Be among the first to experience Sojourn</span>
+
+  <h1>The Best Way to Spend Your Money — <em>Wherever You Are.</em></h1>
+
+  <p class="hero-sub">
+    Tell Sojourn your budget and what matters to you. Whether it's a night out or your next big trip, it finds the best options to eat, stay, and&nbsp;explore.
+  </p>
+
+  <div class="waitlist-form" id="waitlist-form">
+    <input type="email" id="email-input" placeholder="Your email address" autocomplete="email">
+    <button type="button" onclick="handleWaitlist()">Get early access →</button>
+  </div>
+
+  <div class="success-msg" id="success-msg">
+    <div class="success-icon"></div>
+    <span>You're on the list! Wherever you're headed next — Sojourn will be ready.</span>
+  </div>
+
+  <p class="hero-fine">
+    Early access is free. No credit card required.
+  </p>
+
+
+</section>
+
+<!-- MOCKUP -->
+<section style="padding: 5rem 2rem; background: var(--bg-warm); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);">
+  <div class="mockup-section-grid" style="max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+    <div>
+      <p class="section-label">See it in action</p>
+      <h2 style="font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: var(--ink); line-height: 1.15; margin-bottom: 1.25rem;">Your budget.<br>Your priorities.<br><em>Instantly balanced.</em></h2>
+      <p style="font-size: 0.92rem; font-weight: 300; color: var(--ink-mid); line-height: 1.8; max-width: 36ch;">Drag any slider. Every other category rebalances proportionally in real time — automatically, instantly, the way it should be.</p>
+    </div>
+    <div style="display: flex; justify-content: center;">
+      <div class="sj-phone">
+        <div class="sj-accent-bar"></div>
+        <div class="sj-statusbar">
+          <span>9:41</span>
+          <span>SOJOURN</span>
+          <span>●●●</span>
+        </div>
+        <div class="sj-header">
+          <div class="sj-trip-row">
+            <span class="sj-dest">Lisbon, Portugal</span>
+            <span class="sj-nights">5 nights</span>
+          </div>
+          <div class="sj-budget-display">
+            <span class="sj-budget-num">$3,000</span>
+            <span class="sj-budget-label">total budget</span>
+          </div>
+        </div>
+        <div class="sj-body">
+          <div class="sj-section-label">Allocate your priorities</div>
+          <div class="sj-slider-row">
+            <div class="sj-slider-meta">
+              <span class="sj-cat-name">Stays</span>
+              <div class="sj-cat-vals">
+                <span class="sj-cat-amt" id="lp-amt-stays">$1,200</span>
+                <span class="sj-cat-pct" id="lp-pct-stays">40%</span>
+              </div>
+            </div>
+            <div class="sj-track">
+              <div class="sj-fill" id="lp-fill-stays" style="width:40%"></div>
+              <div class="sj-thumb" id="lp-thumb-stays" style="left:40%"></div>
+              <input type="range" class="sj-input" id="lp-sl-stays" min="0" max="100" value="40" step="1">
+            </div>
+          </div>
+          <div class="sj-slider-row">
+            <div class="sj-slider-meta">
+              <span class="sj-cat-name">Dining</span>
+              <div class="sj-cat-vals">
+                <span class="sj-cat-amt" id="lp-amt-dining">$750</span>
+                <span class="sj-cat-pct" id="lp-pct-dining">25%</span>
+              </div>
+            </div>
+            <div class="sj-track">
+              <div class="sj-fill" id="lp-fill-dining" style="width:25%"></div>
+              <div class="sj-thumb" id="lp-thumb-dining" style="left:25%"></div>
+              <input type="range" class="sj-input" id="lp-sl-dining" min="0" max="100" value="25" step="1">
+            </div>
+          </div>
+          <div class="sj-slider-row">
+            <div class="sj-slider-meta">
+              <span class="sj-cat-name">Experiences</span>
+              <div class="sj-cat-vals">
+                <span class="sj-cat-amt" id="lp-amt-experiences">$450</span>
+                <span class="sj-cat-pct" id="lp-pct-experiences">15%</span>
+              </div>
+            </div>
+            <div class="sj-track">
+              <div class="sj-fill" id="lp-fill-experiences" style="width:15%"></div>
+              <div class="sj-thumb" id="lp-thumb-experiences" style="left:15%"></div>
+              <input type="range" class="sj-input" id="lp-sl-experiences" min="0" max="100" value="15" step="1">
+            </div>
+          </div>
+          <div class="sj-slider-row">
+            <div class="sj-slider-meta">
+              <span class="sj-cat-name">Transport</span>
+              <div class="sj-cat-vals">
+                <span class="sj-cat-amt" id="lp-amt-transport">$300</span>
+                <span class="sj-cat-pct" id="lp-pct-transport">10%</span>
+              </div>
+            </div>
+            <div class="sj-track">
+              <div class="sj-fill" id="lp-fill-transport" style="width:10%"></div>
+              <div class="sj-thumb" id="lp-thumb-transport" style="left:10%"></div>
+              <input type="range" class="sj-input" id="lp-sl-transport" min="0" max="100" value="10" step="1">
+            </div>
+          </div>
+          <div class="sj-divider"></div>
+          <div class="sj-total-row">
+            <span class="sj-total-label">Total allocated</span>
+            <span class="sj-remaining good" id="lp-remaining">$3,000 / $3,000</span>
+          </div>
+          <button class="sj-cta">Optimize my plan →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="how-header">
+      <p class="section-label">How it works</p>
+      <h2>Three Steps. One Perfect Plan.</h2>
+    </div>
+    <div class="how-steps">
+      <div class="step" data-reveal>
+        <div class="step-num">01</div>
+        <h3 class="step-title">Set Your Budget</h3>
+        <p class="step-desc">Pick a number... any number.</p>
+      </div>
+      <div class="step" data-reveal>
+        <div class="step-num">02</div>
+        <h3 class="step-title">Choose Your Priorities</h3>
+        <p class="step-desc">Dining, stays, experiences — weight what matters, ignore what doesn't.</p>
+      </div>
+      <div class="step" data-reveal>
+        <div class="step-num">03</div>
+        <h3 class="step-title">Optimize</h3>
+        <p class="step-desc">No spreadsheets. No second-guessing. Just the best plan for your money.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF STRIP -->
+<section class="proof">
+  <p class="section-label" style="margin-bottom: 3rem;">Why Sojourn</p>
+  <div class="proof-inner">
+    <div class="proof-item">
+      <span class="proof-stat">1</span>
+      <span class="proof-label">App. Every moment. Every trip.</span>
+    </div>
+    <div class="proof-item">
+      <span class="proof-stat">0</span>
+      <span class="proof-label">Tabs open. No more fragmented planning.</span>
+    </div>
+    <div class="proof-item">
+      <span class="proof-stat">∞</span>
+      <span class="proof-label">Real-time reoptimization as you change your mind.</span>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<section class="bottom-cta" id="waitlist">
+  <p class="section-label">Join the waitlist</p>
+  <h2>Stop planning. Start going.</h2>
+  <p>Get early access free. Be there before the rest of the world catches on.</p>
+
+  <div class="waitlist-form" id="waitlist-form-2">
+    <input type="email" id="email-input-2" placeholder="Your email address" autocomplete="email">
+    <button type="button" onclick="handleWaitlist2()">Reserve your spot →</button>
+  </div>
+
+  <div class="success-msg" id="success-msg-2" style="margin-top: 1rem;">
+    <div class="success-icon"></div>
+    <span>You're on the list! Wherever you're headed next — Sojourn will be ready.</span>
+  </div>
+
+  <p class="hero-fine" style="margin-top: 1rem; opacity: 1;">No credit card. No commitment. Cancel anytime.</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">Sojourn</a>
+  <p class="footer-copy">© 2026 Sojourn. All rights reserved. Patent pending.</p>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Nav scroll effect
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Intersection observer for scroll reveals
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
+
+  // Waitlist form 1
+  function handleWaitlist() {
+    const email = document.getElementById('email-input').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('email-input').style.borderColor = '#E24B4A';
+      setTimeout(() => document.getElementById('email-input').style.borderColor = '', 1500);
+      return;
+    }
+    document.getElementById('waitlist-form').style.display = 'none';
+    document.getElementById('success-msg').classList.add('visible');
+    document.querySelector('.hero-fine').style.display = 'none';
+  }
+
+  // Waitlist form 2
+  function handleWaitlist2() {
+    const email = document.getElementById('email-input-2').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('email-input-2').style.borderColor = '#E24B4A';
+      setTimeout(() => document.getElementById('email-input-2').style.borderColor = '', 1500);
+      return;
+    }
+    document.getElementById('waitlist-form-2').style.display = 'none';
+    document.getElementById('success-msg-2').classList.add('visible');
+  }
+
+  // Proportional rebalancing algorithm
+  const LP_BUDGET = 3000;
+  const lpCats = ['stays','dining','experiences','transport'];
+  let lpVals = { stays: 40, dining: 25, experiences: 15, transport: 10 };
+  let lpPrev = { ...lpVals };
+
+  function lpRender() {
+    let total = 0;
+    lpCats.forEach(c => {
+      const v = Math.round(lpVals[c]);
+      total += v;
+      const amt = Math.round(LP_BUDGET * v / 100);
+      document.getElementById('lp-fill-' + c).style.width = v + '%';
+      document.getElementById('lp-thumb-' + c).style.left = v + '%';
+      document.getElementById('lp-sl-' + c).value = v;
+      document.getElementById('lp-amt-' + c).textContent = '$' + amt.toLocaleString();
+      document.getElementById('lp-pct-' + c).textContent = v + '%';
+    });
+    const allocated = Math.round(LP_BUDGET * total / 100);
+    document.getElementById('lp-remaining').textContent = '$' + allocated.toLocaleString() + ' / $' + LP_BUDGET.toLocaleString();
+    document.getElementById('lp-remaining').className = 'sj-remaining good';
+  }
+
+  function lpRebalance(movedCat) {
+    const newVal = parseInt(document.getElementById('lp-sl-' + movedCat).value);
+    const delta = newVal - lpPrev[movedCat];
+    const remaining = 100 - newVal;
+    const others = lpCats.filter(c => c !== movedCat);
+    const otherTotal = others.reduce((sum, c) => sum + lpVals[c], 0);
+
+    lpVals[movedCat] = newVal;
+
+    if (otherTotal > 0) {
+      others.forEach(c => {
+        lpVals[c] = Math.max(0, lpVals[c] * remaining / otherTotal);
+      });
+      // Fix rounding so total = 100
+      const newTotal = lpCats.reduce((sum, c) => sum + lpVals[c], 0);
+      const diff = 100 - newTotal;
+      const adjustable = others.filter(c => lpVals[c] > 0);
+      if (adjustable.length > 0) lpVals[adjustable[0]] += diff;
+    } else {
+      const share = remaining / others.length;
+      others.forEach(c => { lpVals[c] = share; });
+    }
+
+    lpPrev = { ...lpVals };
+    lpRender();
+  }
+
+  lpCats.forEach(c => {
+    document.getElementById('lp-sl-' + c).addEventListener('input', () => lpRebalance(c));
+  });
+  lpRender();
+
+
+  document.getElementById('email-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleWaitlist();
+  });
+  document.getElementById('email-input-2').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleWaitlist2();
+  });
+</script>
+</body>
+</html>
