@@ -57,6 +57,7 @@
     width: 100%; height: 100%;
     pointer-events: none;
     z-index: 200;
+    overflow: hidden;
   }
 
 
@@ -774,8 +775,8 @@
     .how { padding: 5rem 1.5rem; }
     .proof { padding: 4rem 1.5rem; }
     .bottom-cta { padding: 5rem 1.5rem; }
-    .plane { display: none; }
-    .plane-trail { display: none; }
+    .plane { width: 22px; opacity: 0.15; }
+    .plane-trail { width: 80px; }
   }
 
   @media (max-width: 520px) {
@@ -1048,27 +1049,55 @@
 
   document.querySelectorAll('[data-reveal]').forEach(el => observer.observe(el));
 
+  // Klaviyo integration
+  const KLAVIYO_COMPANY_ID = 'Xnw8qN';
+
+  async function subscribeToKlaviyo(email) {
+    try {
+      await fetch('https://a.klaviyo.com/client/subscriptions/?company_id=Xnw8qN', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'revision': '2023-02-22'
+        },
+        body: JSON.stringify({
+          data: {
+            type: 'subscription',
+            attributes: {
+              list_id: 'ShJK5T',
+              email: email
+            }
+          }
+        })
+      });
+    } catch(e) {
+      console.log('Klaviyo error:', e);
+    }
+  }
+
   // Waitlist form 1
-  function handleWaitlist() {
+  async function handleWaitlist() {
     const email = document.getElementById('email-input').value.trim();
     if (!email || !email.includes('@')) {
       document.getElementById('email-input').style.borderColor = '#E24B4A';
       setTimeout(() => document.getElementById('email-input').style.borderColor = '', 1500);
       return;
     }
+    await subscribeToKlaviyo(email);
     document.getElementById('waitlist-form').style.display = 'none';
     document.getElementById('success-msg').classList.add('visible');
     document.querySelector('.hero-fine').style.display = 'none';
   }
 
   // Waitlist form 2
-  function handleWaitlist2() {
+  async function handleWaitlist2() {
     const email = document.getElementById('email-input-2').value.trim();
     if (!email || !email.includes('@')) {
       document.getElementById('email-input-2').style.borderColor = '#E24B4A';
       setTimeout(() => document.getElementById('email-input-2').style.borderColor = '', 1500);
       return;
     }
+    await subscribeToKlaviyo(email);
     document.getElementById('waitlist-form-2').style.display = 'none';
     document.getElementById('success-msg-2').classList.add('visible');
   }
