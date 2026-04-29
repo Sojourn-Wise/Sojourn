@@ -163,12 +163,34 @@
   .hero {
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    text-align: center;
     padding: 8rem 2rem 5rem;
     position: relative;
+  }
+
+  .hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 55% 45%;
+    gap: 3rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .hero-demo {
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.9s var(--ease) 0.5s forwards;
   }
 
   .hero-eyebrow {
@@ -205,13 +227,13 @@
 
   .hero h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(3rem, 7vw, 6rem);
+    font-size: clamp(2.4rem, 4.2vw, 4rem);
     font-weight: 400;
-    line-height: 1.05;
+    line-height: 1.08;
     letter-spacing: -0.01em;
     color: var(--ink);
-    max-width: 14ch;
-    margin: 0 auto 1.75rem;
+    max-width: 22ch;
+    margin: 0 0 1.5rem;
     opacity: 0;
     transform: translateY(16px);
     animation: fadeUp 0.8s var(--ease) 0.35s forwards;
@@ -223,12 +245,12 @@
   }
 
   .hero-sub {
-    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
     font-weight: 300;
     color: var(--ink-mid);
-    max-width: 44ch;
-    line-height: 1.7;
-    margin: 0 auto 2.75rem;
+    max-width: 46ch;
+    line-height: 1.75;
+    margin: 0 0 2.5rem;
     opacity: 0;
     transform: translateY(16px);
     animation: fadeUp 0.8s var(--ease) 0.5s forwards;
@@ -238,9 +260,8 @@
   .waitlist-form {
     display: flex;
     gap: 0;
-    max-width: 480px;
+    max-width: 420px;
     width: 100%;
-    margin: 0 auto;
     border: 1.5px solid var(--rule);
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -276,12 +297,18 @@
     color: var(--bg);
     padding: 0.9rem 1.5rem;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     cursor: pointer;
     white-space: nowrap;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
     transition: background 0.2s ease;
+    min-width: 210px;
   }
   .waitlist-form button:hover { background: var(--brand-mid); }
 
@@ -614,6 +641,9 @@
     text-align: center;
     max-width: 700px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .bottom-cta h2 {
@@ -634,6 +664,13 @@
     margin-left: auto;
     margin-right: auto;
     line-height: 1.7;
+  }
+
+  .bottom-cta .waitlist-form {
+    margin: 0 auto 0;
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 
   /* ── FOOTER ── */
@@ -769,22 +806,50 @@
     .proof-inner { grid-template-columns: 1fr; gap: 2rem; }
     footer { flex-direction: column; text-align: center; }
     .footer-links { justify-content: center; }
-    .hero { padding: 7rem 1.5rem 4rem; }
-    .hero h1 { font-size: clamp(2.2rem, 8vw, 3.5rem); }
-    .hero-sub { font-size: 1rem; }
+    .hero { padding: 6rem 1.5rem 4rem; align-items: flex-start; }
+    .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    .hero-text { align-items: center; text-align: center; }
+    .hero-eyebrow { align-self: center; }
+    .hero h1 { font-size: clamp(2rem, 8vw, 3rem); max-width: 100%; text-align: center; }
+    .hero-sub { max-width: 100%; text-align: center; margin-left: auto; margin-right: auto; }
+    .hero-demo { display: none; }
     .how { padding: 5rem 1.5rem; }
+    .how-header { text-align: center; }
     .proof { padding: 4rem 1.5rem; }
-    .bottom-cta { padding: 5rem 1.5rem; }
-    .plane { width: 28px; opacity: 0.35; }
-    .plane-trail { width: 100px; }
-  }
-
-  @media (max-width: 520px) {
-    .waitlist-form { flex-direction: column; border-radius: var(--radius); }
+    .proof > div { grid-template-columns: 1fr !important; }
+    .proof > div > div { grid-column: 1 !important; }
+    .bottom-cta { padding: 5rem 1.5rem; width: 100%; }
+    .bottom-cta .waitlist-form { width: 100%; max-width: 100%; }
+    .plane { width: 22px; opacity: 0.15; }
+    .plane-trail { width: 80px; }
+    .mockup-section-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      text-align: center;
+    }
+    .mockup-section-grid > div:first-child p { margin-left: auto; margin-right: auto; }
+    .mockup-section-grid > div:last-child { display: flex; justify-content: center; }
+    .phone-wrapper { justify-content: center; }
+    .sj-phone { width: 100%; max-width: 300px; border-radius: 20px; }
+    .waitlist-form {
+      flex-direction: column;
+      border-radius: var(--radius-lg);
+      max-width: 100%;
+    }
+    .waitlist-form input {
+      padding: 1rem 1.25rem;
+      font-size: 1rem;
+      border-radius: 0;
+      text-align: center;
+    }
     .waitlist-form button {
       border-left: none;
       border-top: 1px solid var(--rule);
-      padding: 0.9rem;
+      padding: 1rem 1.5rem;
+      font-size: 0.9rem;
+      min-width: unset;
+      width: 100%;
+      justify-content: center;
     }
     .sj-phone { max-width: 100%; }
   }
@@ -834,46 +899,28 @@
 
 <!-- HERO -->
 <section class="hero" id="hero">
-  <span class="hero-eyebrow">Be among the first to experience Sojourn</span>
-
-  <h1>The Best Way to Spend Your Money – <em>Wherever You Are.</em></h1>
-
-  <p class="hero-sub">
-    Tell Sojourn your budget and what matters to you. Whether it's a night out or your next big trip, it'll find the best options to eat, stay, and&nbsp;explore. Every dollar deserves a good story.
-  </p>
-
-  <div class="waitlist-form" id="waitlist-form">
-    <input type="email" id="email-input" placeholder="Your email address" autocomplete="email">
-    <button type="button" onclick="handleWaitlist()">Get early access →</button>
-  </div>
-
-  <div class="success-msg" id="success-msg">
-    <div class="success-icon"></div>
-    <span>You're on the list! Wherever you're headed next — Sojourn will be ready.</span>
-  </div>
-
-  <p class="hero-fine">
-    Early access is free. No credit card required.
-  </p>
-
-
-</section>
-
-<!-- MOCKUP -->
-<section style="padding: 5rem 2rem; background: var(--bg-warm); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);">
-  <div class="mockup-section-grid">
-    <div>
-      <p class="section-label">See it in action</p>
-      <h2 style="font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: var(--ink); line-height: 1.15; margin-bottom: 1.25rem;">Your budget.<br>Your priorities.<br><em>Instantly balanced.</em></h2>
-      <p style="font-size: 0.92rem; font-weight: 300; color: var(--ink-mid); line-height: 1.8; max-width: 36ch;">Drag any slider. Every other category rebalances proportionally in real time — automatically, the way it should be.</p>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <span class="hero-eyebrow">Be among the first to experience Sojourn</span>
+      <h1>Big trip or big night – finding the best place should never be <em>the hard part.</em></h1>
+      <p class="hero-sub">
+        Great experiences shouldn't be hard to find. Tell Sojourn your budget and what matters to you. It handles the rest.
+      </p>
+      <div class="waitlist-form" id="waitlist-form">
+        <input type="email" id="email-input" placeholder="Your email address" autocomplete="email">
+        <button type="button" onclick="handleWaitlist()">Reserve a spot for launch &nbsp; →</button>
+      </div>
+      <div class="success-msg" id="success-msg">
+        <div class="success-icon"></div>
+        <span>You're on the list! Wherever you're headed next — Sojourn will be ready.</span>
+      </div>
+      <p class="hero-fine">Early access is free. No credit card required.</p>
     </div>
-    <div class="phone-wrapper">
+    <div class="hero-demo">
       <div class="sj-phone">
         <div class="sj-accent-bar"></div>
         <div class="sj-statusbar">
-          <span>9:41</span>
-          <span>SOJOURN</span>
-          <span>●●●</span>
+          <span>9:41</span><span>SOJOURN</span><span>●●●</span>
         </div>
         <div class="sj-header">
           <div class="sj-trip-row">
@@ -984,20 +1031,48 @@
 
 <!-- PROOF STRIP -->
 <section class="proof">
-  <p class="section-label" style="margin-bottom: 3rem;">Why Sojourn</p>
-  <div class="proof-inner">
-    <div class="proof-item">
-      <span class="proof-stat">1</span>
-      <span class="proof-label">App. Every moment. Every trip.</span>
+  <p class="section-label" style="margin-bottom: 2rem;">Why Sojourn</p>
+  <p style="font-family: 'Cormorant Garamond', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 400; color: var(--ink); max-width: 28ch; margin: 0 auto 0.75rem; line-height: 1.35;">Built so nobody misses a great experience because they didn't know where to look.</p>
+  <p style="font-family: 'Cormorant Garamond', serif; font-size: clamp(1.2rem, 2vw, 1.6rem); font-weight: 300; color: var(--ink-mid); max-width: 28ch; margin: 0 auto 3.5rem; line-height: 1.4; font-style: italic;">Every dollar deserves a good story.</p>
+
+  <div style="max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;">
+
+    <div style="background: var(--bg-card); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 1.75rem 2rem; text-align: left; position: relative; display: flex; flex-direction: column;">
+      <span style="font-size: 2.5rem; font-family: 'Cormorant Garamond', serif; color: var(--brand); opacity: 0.25; line-height: 1; position: absolute; top: 0.75rem; left: 1.25rem;">"</span>
+      <p style="font-size: 0.95rem; font-weight: 300; color: var(--ink); line-height: 1.75; font-style: italic; padding-top: 0.75rem; flex: 1;">I've seen a lot of travel ideas. This is the first one where I actually got it immediately — and wanted it to exist right now.</p>
+      <p style="margin-top: 1rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase;">— Justin, Chicago</p>
     </div>
-    <div class="proof-item">
-      <span class="proof-stat">0</span>
-      <span class="proof-label">Tabs open. No more fragmented planning.</span>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 1.75rem 2rem; text-align: left; position: relative; display: flex; flex-direction: column;">
+      <span style="font-size: 2.5rem; font-family: 'Cormorant Garamond', serif; color: var(--brand); opacity: 0.25; line-height: 1; position: absolute; top: 0.75rem; left: 1.25rem;">"</span>
+      <p style="font-size: 0.95rem; font-weight: 300; color: var(--ink); line-height: 1.75; font-style: italic; padding-top: 0.75rem; flex: 1;">Six apps open just to plan a weekend. Someone needed to fix this. Glad it's being fixed.</p>
+      <p style="margin-top: 1rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase;">— Marcus, New York</p>
     </div>
-    <div class="proof-item">
-      <span class="proof-stat">∞</span>
-      <span class="proof-label">Real-time reoptimization as you change your mind.</span>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 1.75rem 2rem; text-align: left; position: relative; display: flex; flex-direction: column;">
+      <span style="font-size: 2.5rem; font-family: 'Cormorant Garamond', serif; color: var(--brand); opacity: 0.25; line-height: 1; position: absolute; top: 0.75rem; left: 1.25rem;">"</span>
+      <p style="font-size: 0.95rem; font-weight: 300; color: var(--ink); line-height: 1.75; font-style: italic; padding-top: 0.75rem; flex: 1;">The fact that it adjusts while you're already traveling — that's the feature nobody else has thought of.</p>
+      <p style="margin-top: 1rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase;">— Ava, San Francisco</p>
     </div>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 1.75rem 2rem; text-align: left; position: relative; display: flex; flex-direction: column;">
+      <span style="font-size: 2.5rem; font-family: 'Cormorant Garamond', serif; color: var(--brand); opacity: 0.25; line-height: 1; position: absolute; top: 0.75rem; left: 1.25rem;">"</span>
+      <p style="font-size: 0.95rem; font-weight: 300; color: var(--ink); line-height: 1.75; font-style: italic; padding-top: 0.75rem; flex: 1;">I spend more time planning trips than being on them. This is exactly what needs to exist.</p>
+      <p style="margin-top: 1rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase;">— James, Chicago</p>
+    </div>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 1.75rem 2rem; text-align: left; position: relative; display: flex; flex-direction: column;">
+      <span style="font-size: 2.5rem; font-family: 'Cormorant Garamond', serif; color: var(--brand); opacity: 0.25; line-height: 1; position: absolute; top: 0.75rem; left: 1.25rem;">"</span>
+      <p style="font-size: 0.95rem; font-weight: 300; color: var(--ink); line-height: 1.75; font-style: italic; padding-top: 0.75rem; flex: 1;">I stopped trusting the group chat for restaurant recommendations years ago. This is the answer.</p>
+      <p style="margin-top: 1rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase;">— Priya, Los Angeles</p>
+    </div>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: 1.75rem 2rem; text-align: left; position: relative; display: flex; flex-direction: column;">
+      <span style="font-size: 2.5rem; font-family: 'Cormorant Garamond', serif; color: var(--brand); opacity: 0.25; line-height: 1; position: absolute; top: 0.75rem; left: 1.25rem;">"</span>
+      <p style="font-size: 0.95rem; font-weight: 300; color: var(--ink); line-height: 1.75; font-style: italic; padding-top: 0.75rem; flex: 1;">Miami has a million options and no good way to filter them. Can't wait for this.</p>
+      <p style="margin-top: 1rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-light); letter-spacing: 0.06em; text-transform: uppercase;">— Carlos, Miami</p>
+    </div>
+
   </div>
 </section>
 
@@ -1005,11 +1080,11 @@
 <section class="bottom-cta" id="waitlist">
   <p class="section-label">Join the waitlist</p>
   <h2>Stop planning. Start going.</h2>
-  <p>Get early access free. Be there before the rest of the world catches on.</p>
+  <p>Reserve your spot now. Be there before everyone else.</p>
 
   <div class="waitlist-form" id="waitlist-form-2">
     <input type="email" id="email-input-2" placeholder="Your email address" autocomplete="email">
-    <button type="button" onclick="handleWaitlist2()">Reserve your spot →</button>
+    <button type="button" onclick="handleWaitlist2()">Reserve a spot for launch &nbsp; →</button>
   </div>
 
   <div class="success-msg" id="success-msg-2" style="margin-top: 1rem;">
