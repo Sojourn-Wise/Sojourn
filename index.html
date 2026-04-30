@@ -436,6 +436,7 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 0;
     position: relative;
+    align-items: stretch;
   }
 
   .how-steps::before {
@@ -450,11 +451,11 @@
   }
 
   .step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    align-items: start;
     text-align: center;
-    padding: 0 2.5rem;
+    padding: 0 2rem;
     position: relative;
     z-index: 1;
     opacity: 0;
@@ -477,7 +478,7 @@
     font-size: 1.4rem;
     font-weight: 500;
     color: var(--brand);
-    margin-bottom: 2rem;
+    margin: 0 auto 2rem;
     flex-shrink: 0;
     transition: background 0.3s, border-color 0.3s;
   }
@@ -501,8 +502,9 @@
     font-weight: 300;
     color: var(--ink-mid);
     line-height: 1.65;
-    max-width: 22ch;
+    max-width: 28ch;
     margin: 0 auto;
+    align-self: start;
   }
 
   /* ── USE CASES ── */
@@ -812,7 +814,11 @@
     .hero-eyebrow { align-self: center; }
     .hero h1 { font-size: clamp(2rem, 8vw, 3rem); max-width: 100%; text-align: center; }
     .hero-sub { max-width: 100%; text-align: center; margin-left: auto; margin-right: auto; }
-    .hero-demo { display: none; }
+    .hero-demo { 
+      display: flex; 
+      justify-content: center;
+      margin-top: 1rem;
+    }
     .how { padding: 5rem 1.5rem; }
     .how-header { text-align: center; }
     .proof { padding: 4rem 1.5rem; }
@@ -902,7 +908,7 @@
   <div class="hero-inner">
     <div class="hero-text">
       <span class="hero-eyebrow">Be among the first to experience Sojourn</span>
-      <h1>Big trip or big night – finding the best place should never be <em>the hard part.</em></h1>
+      <h1>Whether it's a big trip or a big night – finding the best place should never be <em>the hard part.</em></h1>
       <p class="hero-sub">
         Great experiences shouldn't be hard to find. Tell Sojourn your budget and what matters to you. It handles the rest.
       </p>
@@ -1018,12 +1024,12 @@
       <div class="step" data-reveal>
         <div class="step-num">02</div>
         <h3 class="step-title">Choose Your Priorities</h3>
-        <p class="step-desc">Dining, stays, experiences — weight what matters, ignore what doesn't.</p>
+        <p class="step-desc">Slide and weight what matters, ignore what doesn't.</p>
       </div>
       <div class="step" data-reveal>
         <div class="step-num">03</div>
         <h3 class="step-title">Optimize</h3>
-        <p class="step-desc">No spreadsheets. No second-guessing. Just the best plan for your money.</p>
+        <p class="step-desc">No spreadsheets. No tabs. No second-guessing. Just the best plan for your money.</p>
       </div>
     </div>
   </div>
@@ -1032,7 +1038,7 @@
 <!-- PROOF STRIP -->
 <section class="proof">
   <p class="section-label" style="margin-bottom: 2rem;">Why Sojourn</p>
-  <p style="font-family: 'Cormorant Garamond', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 400; color: var(--ink); max-width: 28ch; margin: 0 auto 0.75rem; line-height: 1.35;">Built so nobody misses a great experience because they didn't know where to look.</p>
+  <p style="font-family: 'Cormorant Garamond', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 400; color: var(--ink); max-width: 28ch; margin: 0 auto 0.75rem; line-height: 1.35;">The best places exist. We just make sure you find them.</p>
   <p style="font-family: 'Cormorant Garamond', serif; font-size: clamp(1.2rem, 2vw, 1.6rem); font-weight: 300; color: var(--ink-mid); max-width: 28ch; margin: 0 auto 3.5rem; line-height: 1.4; font-style: italic;">Every dollar deserves a good story.</p>
 
   <div style="max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;">
