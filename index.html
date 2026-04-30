@@ -947,9 +947,9 @@
               </div>
             </div>
             <div class="sj-track">
-              <div class="sj-fill" id="lp-fill-stays" style="width:40%"></div>
-              <div class="sj-thumb" id="lp-thumb-stays" style="left:40%"></div>
-              <input type="range" class="sj-input" id="lp-sl-stays" min="0" max="100" value="40" step="1">
+              <div class="sj-fill" id="lp-fill-stays" style="width:30%"></div>
+              <div class="sj-thumb" id="lp-thumb-stays" style="left:30%"></div>
+              <input type="range" class="sj-input" id="lp-sl-stays" min="0" max="100" value="30" step="1">
             </div>
           </div>
           <div class="sj-slider-row">
@@ -982,16 +982,30 @@
           </div>
           <div class="sj-slider-row">
             <div class="sj-slider-meta">
-              <span class="sj-cat-name">Transport</span>
+              <span class="sj-cat-name">Social</span>
               <div class="sj-cat-vals">
-                <span class="sj-cat-amt" id="lp-amt-transport">$300</span>
-                <span class="sj-cat-pct" id="lp-pct-transport">10%</span>
+                <span class="sj-cat-amt" id="lp-amt-nightlife">$300</span>
+                <span class="sj-cat-pct" id="lp-pct-nightlife">10%</span>
               </div>
             </div>
             <div class="sj-track">
-              <div class="sj-fill" id="lp-fill-transport" style="width:10%"></div>
-              <div class="sj-thumb" id="lp-thumb-transport" style="left:10%"></div>
-              <input type="range" class="sj-input" id="lp-sl-transport" min="0" max="100" value="10" step="1">
+              <div class="sj-fill" id="lp-fill-nightlife" style="width:10%"></div>
+              <div class="sj-thumb" id="lp-thumb-nightlife" style="left:10%"></div>
+              <input type="range" class="sj-input" id="lp-sl-nightlife" min="0" max="100" value="10" step="1">
+            </div>
+          </div>
+          <div class="sj-slider-row">
+            <div class="sj-slider-meta">
+              <span class="sj-cat-name">Wellness</span>
+              <div class="sj-cat-vals">
+                <span class="sj-cat-amt" id="lp-amt-wellness">$600</span>
+                <span class="sj-cat-pct" id="lp-pct-wellness">20%</span>
+              </div>
+            </div>
+            <div class="sj-track">
+              <div class="sj-fill" id="lp-fill-wellness" style="width:20%"></div>
+              <div class="sj-thumb" id="lp-thumb-wellness" style="left:20%"></div>
+              <input type="range" class="sj-input" id="lp-sl-wellness" min="0" max="100" value="20" step="1">
             </div>
           </div>
           <div class="sj-divider"></div>
@@ -1183,8 +1197,8 @@
 
   // Proportional rebalancing algorithm
   const LP_BUDGET = 3000;
-  const lpCats = ['stays','dining','experiences','transport'];
-  let lpVals = { stays: 40, dining: 25, experiences: 15, transport: 10 };
+  const lpCats = ['stays','dining','experiences','nightlife','wellness'];
+  let lpVals = { stays: 30, dining: 25, experiences: 15, nightlife: 10, wellness: 20 };
   let lpPrev = { ...lpVals };
 
   function lpRender() {
