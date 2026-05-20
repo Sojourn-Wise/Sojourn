@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sojourn — Your Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root {
+  --bg:#FAF8F5; --bg-warm:#F3EFE8; --bg-card:#FFFFFF;
+  --ink:#1A1A2E; --ink-mid:#4A4A5A; --ink-light:#8A8A9A;
+  --brand:#2C5F8C; --brand-dark:#1A3D5C;
+  --accent:#C8A96A; --accent-lt:#F7F0E3;
+  --rule:#E2DDD6; --radius:8px; --radius-lg:14px;
+  --cat-dining:#E07A5F; --cat-stays:#2C5F8C;
+  --cat-exp:#6B7A8D; --cat-social:#C8A96A; --cat-wellness:#81B29A;
+  --tab-h:64px; --nav-h:56px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);overflow:hidden;}
+
+/* ── NAV ── */
+.top-nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(250,248,245,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;z-index:200;}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);text-decoration:none;}
+.nav-logo sup{font-size:0.4em;vertical-align:super;opacity:0.5;font-weight:400;}
+.back-btn{display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;font-weight:400;color:var(--brand);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;padding:0.4rem 0;}
+.back-btn svg{width:16px;height:16px;}
+.city-badge{font-size:0.78rem;font-weight:500;color:var(--ink-mid);letter-spacing:0.04em;}
+
+/* ── MAIN SCROLL ── */
+.main{position:fixed;top:var(--nav-h);left:0;right:0;bottom:var(--tab-h);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+  .view{display:none;min-height:100%;}
+  .view.active{display:block;}
+  #plan-view.active, #itinerary-view.active { padding: 1.25rem; }
+  #map-view.active{display:block;position:absolute;top:0;left:0;right:0;bottom:0;}
+  #map-view{padding:0;position:relative;}
+  #leaflet-map{position:absolute;top:0;left:0;right:0;bottom:0;}
+
+/* ── BUDGET HEADER ── */
+.budget-header{background:var(--brand);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center;}
+.budget-total{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:white;}
+.budget-label{font-size:0.72rem;font-weight:500;color:rgba(255,255,255,0.6);letter-spacing:0.1em;text-transform:uppercase;}
+.budget-city{font-size:0.9rem;color:rgba(255,255,255,0.9);font-weight:300;}
+
+/* ── CATEGORY CARDS ── */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
+.cat-card{border-radius:var(--radius-lg);padding:1.25rem;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;position:relative;overflow:hidden;min-height:130px;display:flex;flex-direction:column;justify-content:space-between;}
+.cat-card:active{transform:scale(0.97);}
+.cat-card-inner{position:relative;z-index:1;}
+.cat-emoji{font-size:1.6rem;margin-bottom:0.5rem;display:block;}
+.cat-name{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500;color:white;line-height:1.2;}
+.cat-budget{font-size:0.78rem;color:rgba(255,255,255,0.8);margin-top:0.25rem;}
+.cat-pct{font-size:0.72rem;color:rgba(255,255,255,0.6);letter-spacing:0.06em;}
+.cat-arrow{position:absolute;bottom:1rem;right:1rem;width:28px;height:28px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.cat-dining{background:linear-gradient(135deg,#E07A5F,#c5614a);}
+.cat-stays{background:linear-gradient(135deg,#2C5F8C,#1a3d5c);}
+.cat-exp{background:linear-gradient(135deg,#6B7A8D,#4a5a6d);}
+.cat-social{background:linear-gradient(135deg,#C8A96A,#a88848);}
+.cat-wellness{background:linear-gradient(135deg,#81B29A,#5d9178);}
+
+/* ── SUBCATEGORY ── */
+.section-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:400;color:var(--ink);margin-bottom:0.25rem;}
+.section-sub{font-size:0.85rem;color:var(--ink-mid);font-weight:300;margin-bottom:1.25rem;}
+.subcat-list{display:flex;flex-direction:column;gap:0.6rem;}
+.subcat-item{background:var(--bg-card);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color 0.2s,transform 0.15s;}
+.subcat-item:active{transform:scale(0.98);}
+.subcat-item:hover{border-color:var(--brand);}
+.subcat-left{display:flex;align-items:center;gap:0.75rem;}
+.subcat-emoji{font-size:1.3rem;}
+.subcat-name{font-size:0.95rem;font-weight:500;color:var(--ink);}
+.subcat-count{font-size:0.78rem;color:var(--ink-light);}
+.subcat-chevron{color:var(--ink-light);font-size:1.1rem;}
+.budget-pill{background:var(--accent-lt);border:1px solid rgba(200,169,106,0.3);border-radius:100px;padding:0.2rem 0.6rem;font-size:0.72rem;font-weight:500;color:var(--accent);}
+
+/* ── PLACE CARDS ── */
+.places-list{display:flex;flex-direction:column;gap:0.75rem;}
+.place-card{background:var(--bg-card);border:1px solid var(--rule);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:transform 0.15s,box-shadow 0.2s;}
+.place-card:active{transform:scale(0.98);}
+.place-card:hover{box-shadow:0 4px 20px rgba(26,26,46,0.08);border-color:rgba(44,95,140,0.3);}
+.place-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:600;color:white;flex-shrink:0;}
+.place-body{padding:1rem 1.25rem;}
+.place-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.5rem;}
+.place-name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:500;color:var(--ink);line-height:1.2;}
+.place-rating{display:flex;align-items:center;gap:0.25rem;font-size:0.82rem;font-weight:500;color:var(--accent);}
+.place-desc{font-size:0.85rem;font-weight:300;color:var(--ink-mid);line-height:1.6;margin-bottom:0.75rem;}
+.place-footer{display:flex;align-items:center;justify-content:space-between;}
+.place-price{font-size:0.78rem;color:var(--ink-light);}
+.place-tags{display:flex;gap:0.4rem;flex-wrap:wrap;}
+.tag{background:var(--bg-warm);border-radius:100px;padding:0.2rem 0.6rem;font-size:0.7rem;color:var(--ink-mid);}
+.add-btn{background:var(--brand);color:white;border:none;border-radius:100px;padding:0.4rem 0.9rem;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;}
+.add-btn:hover{background:var(--brand-dark);}
+.add-btn.added{background:var(--cat-wellness);}
+
+/* ── MAP TAB ── */
+#map-view{padding:0;position:relative;}
+#leaflet-map{position:absolute;top:0;left:0;right:0;bottom:0;}
+.map-legend{position:absolute;top:0.75rem;right:0.75rem;background:rgba(250,248,245,0.95);backdrop-filter:blur(8px);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0.75rem 1rem;z-index:400;}
+.legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--ink-mid);margin-bottom:0.3rem;}
+.legend-item:last-child{margin-bottom:0;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.map-place-sheet{position:absolute;bottom:0;left:0;right:0;background:var(--bg-card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:1.25rem;z-index:400;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);border-top:1px solid var(--rule);}
+.map-place-sheet.visible{transform:translateY(0);}
+.sheet-handle{width:36px;height:4px;background:var(--rule);border-radius:2px;margin:0 auto 1rem;}
+.sheet-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.2rem;color:var(--ink-light);cursor:pointer;}
+
+/* ── ITINERARY TAB ── */
+.itinerary-empty{text-align:center;padding:3rem 1.5rem;}
+.itinerary-empty-icon{font-size:3rem;margin-bottom:1rem;opacity:0.4;}
+.itinerary-empty-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;color:var(--ink);margin-bottom:0.5rem;}
+.itinerary-empty-sub{font-size:0.85rem;color:var(--ink-light);line-height:1.6;}
+.day-section{margin-bottom:1.5rem;}
+.day-header{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:var(--ink);margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;}
+.day-label{font-size:0.72rem;font-weight:500;color:var(--ink-light);letter-spacing:0.08em;text-transform:uppercase;}
+.itinerary-item{background:var(--bg-card);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0.9rem 1.1rem;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between;}
+.itinerary-item-left{display:flex;align-items:center;gap:0.75rem;}
+.itinerary-cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.itinerary-name{font-size:0.9rem;font-weight:500;color:var(--ink);}
+.itinerary-sub{font-size:0.75rem;color:var(--ink-light);}
+.remove-btn{background:none;border:none;color:var(--ink-light);font-size:1rem;cursor:pointer;padding:0.25rem;}
+.clear-btn{background:none;border:1px solid var(--rule);border-radius:100px;padding:0.3rem 0.75rem;font-size:0.75rem;color:var(--ink-mid);cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* ── BOTTOM TABS ── */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;height:var(--tab-h);background:rgba(250,248,245,0.97);backdrop-filter:blur(12px);border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-around;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.25rem;cursor:pointer;border:none;background:none;padding:0.5rem;transition:opacity 0.2s;}
+.tab-icon{font-size:1.3rem;line-height:1;}
+.tab-label{font-size:0.65rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-light);transition:color 0.2s;}
+.tab-btn.active .tab-label{color:var(--brand);}
+.tab-btn.active .tab-icon{filter:drop-shadow(0 0 3px rgba(44,95,140,0.3));}
+
+/* ── INPUT SCREEN ── */
+.input-screen{position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:2rem 1.5rem 3rem;}
+.input-header{text-align:center;margin-bottom:2.5rem;padding-top:1rem;}
+.input-logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink);margin-bottom:0.25rem;}
+.input-logo sup{font-size:0.35em;vertical-align:super;opacity:0.5;}
+.input-tagline{font-size:0.85rem;color:var(--ink-mid);font-weight:300;}
+.input-group{margin-bottom:1.25rem;}
+.input-label{font-size:0.75rem;font-weight:500;color:var(--ink-mid);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.5rem;display:block;}
+.input-field{width:100%;border:1.5px solid var(--rule);border-radius:var(--radius-lg);padding:0.85rem 1.1rem;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:300;color:var(--ink);background:var(--bg-card);outline:none;transition:border-color 0.2s;}
+.input-field:focus{border-color:var(--brand);}
+.city-suggestions{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;}
+.city-chip{background:var(--bg-warm);border:1px solid var(--rule);border-radius:100px;padding:0.35rem 0.85rem;font-size:0.82rem;color:var(--ink-mid);cursor:pointer;transition:all 0.2s;}
+.city-chip:hover,.city-chip.selected{background:var(--brand);color:white;border-color:var(--brand);}
+.slider-section{margin-bottom:1.5rem;}
+.slider-section-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:400;color:var(--ink);margin-bottom:1rem;}
+.slider-row{margin-bottom:1rem;}
+.slider-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;}
+.slider-name{font-size:0.88rem;font-weight:500;color:var(--ink);}
+.slider-vals{display:flex;align-items:baseline;gap:0.3rem;}
+.slider-amt{font-size:0.88rem;font-weight:500;color:var(--brand);}
+.slider-pct{font-size:0.75rem;color:var(--ink-light);}
+.slider-track{position:relative;height:4px;background:var(--rule);border-radius:2px;}
+.slider-fill{position:absolute;left:0;top:0;bottom:0;border-radius:2px;transition:width 0.1s;}
+.slider-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:var(--bg-card);border:2px solid currentColor;border-radius:50%;pointer-events:none;transition:left 0.1s;}
+.slider-input{position:absolute;top:-8px;left:0;right:0;width:100%;height:20px;opacity:0;cursor:pointer;margin:0;}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-top:1px solid var(--rule);margin-top:0.5rem;}
+.total-label{font-size:0.82rem;color:var(--ink-light);}
+.total-val{font-size:0.9rem;font-weight:500;color:var(--green);}
+.optimize-btn{width:100%;background:var(--ink);color:var(--bg);border:none;border-radius:var(--radius-lg);padding:1rem;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;letter-spacing:0.04em;transition:background 0.2s;margin-top:1rem;}
+.optimize-btn:hover{background:var(--brand-dark);}
+.cat-dining-color{color:var(--cat-dining);}
+.cat-stays-color{color:var(--cat-stays);}
+.cat-exp-color{color:var(--cat-exp);}
+.cat-social-color{color:var(--cat-social);}
+.cat-wellness-color{color:var(--cat-wellness);}
+  /* NEW FEATURES */
+  .time-banner{border-radius:var(--radius-lg);padding:0.65rem 1rem;margin-bottom:0.9rem;display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;}
+  .time-morning{background:#FFF8E7;color:#8B6914;}
+  .time-afternoon{background:#E8F5EE;color:#1E7A4E;}
+  .time-evening{background:#FFF0EB;color:#c05a3a;}
+  .time-night{background:#EBF0F8;color:var(--brand);}
+  .surprise-bar{width:100%;background:linear-gradient(135deg,var(--accent),#a88030);color:white;border:none;border-radius:var(--radius-lg);padding:0.85rem;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:0.9rem;}
+  .adj-panel{background:var(--bg-card);border:1px solid var(--rule);border-radius:var(--radius-lg);margin-bottom:0.9rem;overflow:hidden;}
+  .adj-hdr{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;cursor:pointer;}
+  .adj-hdr span{font-size:0.85rem;font-weight:500;color:var(--ink);}
+  .adj-body{padding:0 1rem 0.9rem;display:none;}
+  .adj-body.open{display:block;}
+  .adj-row{margin-bottom:0.75rem;}
+  .book-btn{background:var(--brand);color:white;border:none;border-radius:100px;padding:0.3rem 0.7rem;font-size:0.7rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;transition:background 0.15s;}
+  .book-btn:hover{background:var(--brand-dark);}
+  .fav-btn{width:26px;height:26px;border:1px solid var(--rule);border-radius:50%;background:none;cursor:pointer;font-size:0.8rem;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+  .fav-btn.loved{background:#E07A5F;border-color:#E07A5F;color:white;}
+  .dist-tag{font-size:0.68rem;color:var(--brand);font-weight:500;}
+  .it-actions{display:flex;gap:0.6rem;margin-bottom:1rem;}
+  .it-act-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.65rem;border-radius:var(--radius-lg);font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:500;cursor:pointer;}
+  .it-share{background:var(--brand);color:white;border:none;}
+  .it-export{background:var(--bg-warm);color:var(--ink);border:1px solid var(--rule);}
+  .bsummary{background:var(--brand);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-top:1rem;display:flex;justify-content:space-between;}
+  .bsummary-item{text-align:center;}
+  .bsummary-val{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:white;}
+  .bsummary-lbl{font-size:0.62rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;}
+  .toast-el{position:fixed;bottom:calc(var(--tab-h) + 0.75rem);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:white;padding:0.5rem 1.1rem;border-radius:100px;font-size:0.8rem;opacity:0;transition:all 0.3s;z-index:700;white-space:nowrap;pointer-events:none;}
+  .toast-el.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .surp-overlay{position:fixed;inset:0;background:rgba(26,26,46,0.55);z-index:600;display:none;align-items:flex-end;}
+  .surp-overlay.open{display:flex;}
+  .surp-sheet{background:var(--bg-card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:1.25rem 1.25rem 2rem;width:100%;position:relative;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);}
+  @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  .surp-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.1rem;color:var(--ink-light);cursor:pointer;}
+  .surp-badge{display:inline-block;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-lt);border:1px solid rgba(200,169,106,0.3);padding:0.18rem 0.55rem;border-radius:100px;margin-bottom:0.65rem;}
+  .surp-name{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--ink);margin-bottom:0.3rem;}
+  .surp-rating{font-size:0.82rem;color:var(--accent);margin-bottom:0.65rem;}
+  .surp-desc{font-size:0.84rem;color:var(--ink-mid);line-height:1.65;font-weight:300;margin-bottom:1rem;}
+  .surp-acts{display:flex;gap:0.65rem;}
+  .surp-book{flex:1;background:var(--brand);color:white;border:none;border-radius:var(--radius-lg);padding:0.8rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;}
+  .surp-add{flex:1;background:var(--bg-warm);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0.8rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;}
+  .srch-view{padding:1rem;}
+  .srch-wrap{position:relative;margin-bottom:1rem;}
+  .srch-field{width:100%;border:1.5px solid var(--rule);border-radius:var(--radius-lg);padding:0.8rem 1rem 0.8rem 2.4rem;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--ink);background:var(--bg-card);outline:none;transition:border-color 0.2s;}
+  .srch-field:focus{border-color:var(--brand);}
+  .srch-icon{position:absolute;left:0.85rem;top:50%;transform:translateY(-50%);font-size:0.85rem;color:var(--ink-light);}
+  .srch-result{background:var(--bg-card);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0.85rem 1rem;margin-bottom:0.5rem;}
+  .srch-result-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;}
+  .srch-name{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--ink);}
+  .srch-pill{font-size:0.65rem;font-weight:600;color:white;padding:0.15rem 0.5rem;border-radius:100px;}
+  .srch-meta{font-size:0.76rem;color:var(--ink-mid);margin-bottom:0.3rem;}
+  .srch-desc{font-size:0.78rem;color:var(--ink-light);font-weight:300;line-height:1.5;}
+  .srch-empty{text-align:center;padding:2.5rem 1rem;color:var(--ink-light);}
+  .near-me-map-btn{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--bg-card);border:1px solid var(--rule);border-radius:100px;padding:0.45rem 1rem;font-size:0.78rem;font-weight:500;color:var(--brand);cursor:pointer;z-index:400;box-shadow:0 2px 10px rgba(26,26,46,0.1);font-family:'DM Sans',sans-serif;}
+  @media print{.top-nav,.tab-bar,.add-btn,.book-btn,.fav-btn,.it-actions,.surprise-bar,.adj-panel,.time-banner{display:none!important;}.main{position:static;overflow:visible;bottom:auto;}body{overflow:auto;}.view{display:block!important;position:static;}#plan-view,#search-view,#map-view{display:none!important;}#itinerary-view{display:block!important;}}
+</head>
+<body>
+
+<!-- INPUT SCREEN -->
+<div class="input-screen" id="input-screen">
+  <div class="input-header">
+    <div class="input-logo">Sojourn<sup>TM</sup></div>
+    <div class="input-tagline">Every dollar deserves a good story.</div>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">Where are you headed?</label>
+    <select class="input-field" id="city-input" style="cursor:pointer;appearance:auto;">
+      <option value="Chicago, IL">Chicago, IL</option>
+      <option value="New York, NY">New York, NY</option>
+      <option value="Lisbon, Portugal">Lisbon, Portugal</option>
+    </select>
+    <button onclick="useMyLocation()" id="location-btn" style="margin-top:0.6rem;width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;background:none;border:1.5px solid var(--rule);border-radius:var(--radius-lg);padding:0.7rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:400;color:var(--ink-mid);cursor:pointer;transition:border-color 0.2s,color 0.2s;">
+      <span>📍</span><span id="location-btn-text">Use my current location</span>
+    </button>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">What's your budget?</label>
+    <input class="input-field" id="budget-input" type="number" placeholder="e.g. 200 for a night out, 2000 for a trip" value="1500">
+  </div>
+
+  <div class="slider-section">
+    <div class="slider-section-title">Weight what matters most</div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <span class="slider-name">🍽 Dining</span>
+        <div class="slider-vals">
+          <span class="slider-amt cat-dining-color" id="si-amt-dining">$450</span>
+          <span class="slider-pct" id="si-pct-dining">30%</span>
+        </div>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill" id="si-fill-dining" style="background:var(--cat-dining);width:30%"></div>
+        <div class="slider-thumb cat-dining-color" id="si-thumb-dining" style="left:30%"></div>
+        <input type="range" class="slider-input" id="si-sl-dining" min="0" max="100" value="30" step="1">
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <span class="slider-name">🏨 Stays</span>
+        <div class="slider-vals">
+          <span class="slider-amt cat-stays-color" id="si-amt-stays">$300</span>
+          <span class="slider-pct" id="si-pct-stays">20%</span>
+        </div>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill" id="si-fill-stays" style="background:var(--cat-stays);width:20%"></div>
+        <div class="slider-thumb cat-stays-color" id="si-thumb-stays" style="left:20%"></div>
+        <input type="range" class="slider-input" id="si-sl-stays" min="0" max="100" value="20" step="1">
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <span class="slider-name">🎭 Experiences</span>
+        <div class="slider-vals">
+          <span class="slider-amt cat-exp-color" id="si-amt-experiences">$300</span>
+          <span class="slider-pct" id="si-pct-experiences">20%</span>
+        </div>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill" id="si-fill-experiences" style="background:var(--cat-exp);width:20%"></div>
+        <div class="slider-thumb cat-exp-color" id="si-thumb-experiences" style="left:20%"></div>
+        <input type="range" class="slider-input" id="si-sl-experiences" min="0" max="100" value="20" step="1">
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <span class="slider-name">🥂 Social</span>
+        <div class="slider-vals">
+          <span class="slider-amt cat-social-color" id="si-amt-social">$225</span>
+          <span class="slider-pct" id="si-pct-social">15%</span>
+        </div>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill" id="si-fill-social" style="background:var(--cat-social);width:15%"></div>
+        <div class="slider-thumb cat-social-color" id="si-thumb-social" style="left:15%"></div>
+        <input type="range" class="slider-input" id="si-sl-social" min="0" max="100" value="15" step="1">
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-meta">
+        <span class="slider-name">🧘 Wellness</span>
+        <div class="slider-vals">
+          <span class="slider-amt cat-wellness-color" id="si-amt-wellness">$225</span>
+          <span class="slider-pct" id="si-pct-wellness">15%</span>
+        </div>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill" id="si-fill-wellness" style="background:var(--cat-wellness);width:15%"></div>
+        <div class="slider-thumb cat-wellness-color" id="si-thumb-wellness" style="left:15%"></div>
+        <input type="range" class="slider-input" id="si-sl-wellness" min="0" max="100" value="15" step="1">
+      </div>
+    </div>
+
+    <div class="total-row">
+      <span class="total-label">Total allocated</span>
+      <span class="total-val" id="si-total">$1,500 / $1,500</span>
+    </div>
+  </div>
+
+  <button class="optimize-btn" onclick="buildPlan()">Optimize My Plan &nbsp; →</button>
+</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav" id="top-nav" style="display:none;">
+  <button class="back-btn" onclick="goBack()" id="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    Back
+  </button>
+  <a href="#" class="nav-logo">Sojourn<sup>TM</sup></a>
+  <div class="city-badge" id="nav-city">Chicago</div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="main-content" style="display:none;">
+
+  <!-- PLAN VIEW -->
+  <div class="view active" id="plan-view">
+    <div class="budget-header">
+      <div>
+        <div class="budget-label">Remaining Budget</div>
+        <div class="budget-total" id="disp-budget">$1,500</div>
+        <div class="budget-city" id="disp-city">Chicago, IL</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="budget-label">Spent</div>
+        <div style="font-size:1rem;color:rgba(255,255,255,0.7);font-weight:300;" id="disp-spent">$0</div>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:0.2rem;" id="disp-duration">Weekend</div>
+      </div>
+    </div>
+
+    <!-- TIME BANNER -->
+    <div id="time-banner" class="time-banner"></div>
+
+    <!-- ADJUST PRIORITIES PANEL -->
+    <div class="adj-panel">
+      <div class="adj-hdr" onclick="toggleAdj()"><span>⚖️ Adjust priorities</span><span id="adj-icon">▼</span></div>
+      <div class="adj-body" id="adj-body">
+        <div class="adj-row"><div class="slider-meta"><span class="slider-name">🍽 Dining</span><div class="slider-vals"><span class="slider-amt cat-dining-color" id="rs-amt-dining">$450</span><span class="slider-pct" id="rs-pct-dining">30%</span></div></div><div class="slider-track"><div class="slider-fill" id="rs-fill-dining" style="background:var(--cat-dining);width:30%"></div><div class="slider-thumb cat-dining-color" id="rs-thumb-dining" style="left:30%"></div><input type="range" class="slider-input" id="rs-sl-dining" min="0" max="100" value="30" step="1"></div></div>
+        <div class="adj-row"><div class="slider-meta"><span class="slider-name">🏨 Stays</span><div class="slider-vals"><span class="slider-amt cat-stays-color" id="rs-amt-stays">$300</span><span class="slider-pct" id="rs-pct-stays">20%</span></div></div><div class="slider-track"><div class="slider-fill" id="rs-fill-stays" style="background:var(--cat-stays);width:20%"></div><div class="slider-thumb cat-stays-color" id="rs-thumb-stays" style="left:20%"></div><input type="range" class="slider-input" id="rs-sl-stays" min="0" max="100" value="20" step="1"></div></div>
+        <div class="adj-row"><div class="slider-meta"><span class="slider-name">🎭 Experiences</span><div class="slider-vals"><span class="slider-amt cat-exp-color" id="rs-amt-experiences">$300</span><span class="slider-pct" id="rs-pct-experiences">20%</span></div></div><div class="slider-track"><div class="slider-fill" id="rs-fill-experiences" style="background:var(--cat-exp);width:20%"></div><div class="slider-thumb cat-exp-color" id="rs-thumb-experiences" style="left:20%"></div><input type="range" class="slider-input" id="rs-sl-experiences" min="0" max="100" value="20" step="1"></div></div>
+        <div class="adj-row"><div class="slider-meta"><span class="slider-name">🥂 Social</span><div class="slider-vals"><span class="slider-amt cat-social-color" id="rs-amt-social">$225</span><span class="slider-pct" id="rs-pct-social">15%</span></div></div><div class="slider-track"><div class="slider-fill" id="rs-fill-social" style="background:var(--cat-social);width:15%"></div><div class="slider-thumb cat-social-color" id="rs-thumb-social" style="left:15%"></div><input type="range" class="slider-input" id="rs-sl-social" min="0" max="100" value="15" step="1"></div></div>
+        <div class="adj-row" style="margin-bottom:0;"><div class="slider-meta"><span class="slider-name">🧘 Wellness</span><div class="slider-vals"><span class="slider-amt cat-wellness-color" id="rs-amt-wellness">$225</span><span class="slider-pct" id="rs-pct-wellness">15%</span></div></div><div class="slider-track"><div class="slider-fill" id="rs-fill-wellness" style="background:var(--cat-wellness);width:15%"></div><div class="slider-thumb cat-wellness-color" id="rs-thumb-wellness" style="left:15%"></div><input type="range" class="slider-input" id="rs-sl-wellness" min="0" max="100" value="15" step="1"></div></div>
+      </div>
+    </div>
+
+    <!-- SURPRISE ME -->
+    <button class="surprise-bar" onclick="surpriseMe()">✨ Surprise Me — Pick the perfect spot right now</button>
+
+    <!-- CATEGORY GRID -->
+    <div id="cat-grid-view">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ink-mid);margin-bottom:0.75rem;font-weight:300;">Tap a category to explore</div>
+      <div class="cat-grid">
+        <div class="cat-card cat-dining" onclick="openCategory('dining')">
+          <div class="cat-card-inner">
+            <span class="cat-emoji">🍽</span>
+            <div class="cat-name">Dining</div>
+            <div class="cat-budget" id="cat-budget-dining">$450</div>
+            <div class="cat-pct" id="cat-pct-dining">30% of budget</div>
+          </div>
+          <div class="cat-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+        </div>
+        <div class="cat-card cat-stays" onclick="openCategory('stays')">
+          <div class="cat-card-inner">
+            <span class="cat-emoji">🏨</span>
+            <div class="cat-name">Stays</div>
+            <div class="cat-budget" id="cat-budget-stays">$300</div>
+            <div class="cat-pct" id="cat-pct-stays">20% of budget</div>
+          </div>
+          <div class="cat-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+        </div>
+        <div class="cat-card cat-exp" onclick="openCategory('experiences')">
+          <div class="cat-card-inner">
+            <span class="cat-emoji">🎭</span>
+            <div class="cat-name">Experiences</div>
+            <div class="cat-budget" id="cat-budget-experiences">$300</div>
+            <div class="cat-pct" id="cat-pct-experiences">20% of budget</div>
+          </div>
+          <div class="cat-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+        </div>
+        <div class="cat-card cat-social" onclick="openCategory('social')">
+          <div class="cat-card-inner">
+            <span class="cat-emoji">🥂</span>
+            <div class="cat-name">Social</div>
+            <div class="cat-budget" id="cat-budget-social">$225</div>
+            <div class="cat-pct" id="cat-pct-social">15% of budget</div>
+          </div>
+          <div class="cat-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+        </div>
+        <div class="cat-card cat-wellness" style="grid-column:1/-1;" onclick="openCategory('wellness')">
+          <div class="cat-card-inner">
+            <span class="cat-emoji">🧘</span>
+            <div class="cat-name">Wellness</div>
+            <div class="cat-budget" id="cat-budget-wellness">$225</div>
+            <div class="cat-pct" id="cat-pct-wellness">15% of budget</div>
+          </div>
+          <div class="cat-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBCATEGORY VIEW -->
+    <div id="subcat-view" style="display:none;">
+      <div class="section-title" id="subcat-title">Dining</div>
+      <div class="section-sub" id="subcat-sub">Select a type to explore options</div>
+      <div class="subcat-list" id="subcat-list"></div>
+    </div>
+
+    <!-- PLACES VIEW -->
+    <div id="places-view" style="display:none;">
+      <div class="section-title" id="places-title">Italian</div>
+      <div class="section-sub" id="places-sub">Top rated within your budget</div>
+      <div class="places-list" id="places-list"></div>
+    </div>
+  </div>
+
+  <!-- SEARCH VIEW -->
+  <div class="view" id="search-view">
+    <div class="srch-view">
+      <div class="srch-wrap">
+        <span class="srch-icon">🔍</span>
+        <input class="srch-field" id="srch-input" placeholder="Search restaurants, bars, hotels..." oninput="doSearch(this.value)">
+      </div>
+      <div id="srch-results"><div class="srch-empty"><div style="font-size:2rem;margin-bottom:0.5rem;opacity:0.3;">🔍</div><div style="font-size:0.88rem;">Search across all categories</div><div style="font-size:0.78rem;margin-top:0.25rem;opacity:0.6;">Restaurants · Hotels · Experiences · Bars · Wellness</div></div></div>
+    </div>
+  </div>
+
+  <!-- MAP VIEW -->
+  <div class="view" id="map-view">
+    <div id="leaflet-map"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-dining)"></div>Dining</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-stays)"></div>Stays</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-exp)"></div>Experiences</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-social)"></div>Social</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cat-wellness)"></div>Wellness</div>
+    </div>
+    <button class="near-me-map-btn" onclick="centerOnMe()">📍 Near Me</button>
+    <div class="map-place-sheet" id="map-sheet">
+      <div class="sheet-handle"></div>
+      <button class="sheet-close" onclick="closeSheet()">✕</button>
+      <div id="sheet-content"></div>
+    </div>
+  </div>
+
+  <!-- ITINERARY VIEW -->
+  <div class="view" id="itinerary-view">
+    <div class="it-actions">
+      <button class="it-act-btn it-share" onclick="sharePlan()">🔗 Share Plan</button>
+      <button class="it-act-btn it-export" onclick="exportPDF()">📄 Export PDF</button>
+    </div>
+    <div id="itinerary-empty" class="itinerary-empty">
+      <div class="itinerary-empty-icon">🗺</div>
+      <div class="itinerary-empty-title">Your itinerary is empty</div>
+      <div class="itinerary-empty-sub">Head to the Plan tab and tap "+ Itinerary" on any place to start building.</div>
+    </div>
+    <div id="itinerary-content" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;">Your Itinerary</div>
+        <button class="clear-btn" onclick="clearItinerary()">Clear all</button>
+      </div>
+      <div id="itinerary-days"></div>
+      <div class="bsummary" id="bsummary">
+        <div class="bsummary-item"><div class="bsummary-val" id="bs-total">$0</div><div class="bsummary-lbl">Budget</div></div>
+        <div class="bsummary-item"><div class="bsummary-val" id="bs-spent">$0</div><div class="bsummary-lbl">Spent</div></div>
+        <div class="bsummary-item"><div class="bsummary-val" id="bs-left">$0</div><div class="bsummary-lbl">Remaining</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div class="tab-bar" id="tab-bar" style="display:none;">
+  <button class="tab-btn active" onclick="switchTab('plan')" id="tab-plan">
+    <span class="tab-icon">🗺</span>
+    <span class="tab-label">Plan</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('search')" id="tab-search">
+    <span class="tab-icon">🔍</span>
+    <span class="tab-label">Search</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('map')" id="tab-map">
+    <span class="tab-icon">📍</span>
+    <span class="tab-label">Map</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('itinerary')" id="tab-itinerary">
+    <span class="tab-icon">📋</span>
+    <span class="tab-label">Itinerary</span>
+  </button>
+</div>
+
+<!-- SURPRISE OVERLAY -->
+<div class="surp-overlay" id="surp-overlay" onclick="closeSurprise(event)">
+  <div class="surp-sheet">
+    <div style="width:32px;height:3px;background:var(--rule);border-radius:2px;margin:0 auto 1rem;"></div>
+    <button class="surp-close" onclick="closeSurprise()">✕</button>
+    <div id="surp-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-el" id="toast-el"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let state = {
+  city: 'Chicago, IL',
+  budget: 1500,
+  sliders: { dining:30, stays:20, experiences:20, social:15, wellness:15 },
+  activeTab: 'plan',
+  navStack: [],
+  itinerary: [],
+  favorites: [],
+  userLat: null,
+  userLng: null,
+  map: null,
+  mapInitialized: false
+};
+
+// ── CITY DATA ──────────────────────────────────────────────────────────────
+const CITIES = {
+  'Chicago, IL': { lat:41.8827, lng:-87.6233, zoom:13 },
+  'New York, NY': { lat:40.7580, lng:-73.9855, zoom:13 },
+  'Lisbon, Portugal': { lat:38.7169, lng:-9.1399, zoom:14 }
+};
+
+const DATA = {
+  'Chicago, IL': {
+    dining: {
+      'American': {
+        emoji:'🍔', color:'var(--cat-dining)',
+        places:[
+          { name:'Girl & The Goat', rating:4.7, price:'$$$', desc:'Stephanie Izard\'s flagship. Wood-fired meats, bold flavors, and the best goat liver mousse you\'ll ever have. Book weeks ahead.', tags:['James Beard Winner','Reservations Needed'], lat:41.8835, lng:-87.6490, budget:80 },
+          { name:'Au Cheval', rating:4.6, price:'$$$', desc:'The burger that stopped a city. Single or double — either way, plan to wait. Absolutely worth every minute.', tags:['Best Burger','Cash Friendly'], lat:41.8832, lng:-87.6497, budget:45 },
+          { name:'The Publican', rating:4.5, price:'$$$', desc:'Whole-animal feasting in a beer hall setting. Pork-forward menu, incredible oysters, craft beers on tap.', tags:['Farm-to-table','Large Groups'], lat:41.8847, lng:-87.6499, budget:65 }
+        ]
+      },
+      'Italian': {
+        emoji:'🍝', color:'var(--cat-dining)',
+        places:[
+          { name:'Monteverde', rating:4.8, price:'$$$', desc:'Sarah Grueneberg\'s love letter to Italian pasta. Every plate is handmade, every bite is a reason to come back.', tags:['James Beard Nominee','Handmade Pasta'], lat:41.8872, lng:-87.6745, budget:75 },
+          { name:'Piccolo Sogno', rating:4.6, price:'$$$', desc:'A hidden garden patio, housemade pasta, and a wine list that goes deep into Italian regions. Romantic and unforgettable.', tags:['Garden Patio','Wine List'], lat:41.8897, lng:-87.6534, budget:70 },
+          { name:'Formento\'s', rating:4.5, price:'$$$', desc:'Classic Italian-American with a modern touch. Great cocktails, great pasta, great people-watching from the bar.', tags:['Classic Vibes','Full Bar'], lat:41.8855, lng:-87.6510, budget:65 }
+        ]
+      },
+      'Mexican': {
+        emoji:'🌮', color:'var(--cat-dining)',
+        places:[
+          { name:'Frontera Grill', rating:4.6, price:'$$$', desc:'Rick Bayless changed Mexican cuisine in America here. Regional Mexican at its finest — not what you\'d expect, better.', tags:['Rick Bayless','Regional Mexican'], lat:41.8875, lng:-87.6262, budget:60 },
+          { name:'Carnitas Uruapan', rating:4.5, price:'$', desc:'The best carnitas in Chicago, full stop. Order by the pound, take it to a table, eat until you can\'t.', tags:['Cash Only','BYOB'], lat:41.8456, lng:-87.6712, budget:20 },
+          { name:'La Palma', rating:4.4, price:'$$', desc:'Authentic Michoacán flavors in Pilsen. Family-run, warm, and the kind of food that makes you feel at home.', tags:['Family Owned','Neighborhood Gem'], lat:41.8545, lng:-87.6556, budget:30 }
+        ]
+      },
+      'Asian': {
+        emoji:'🍜', color:'var(--cat-dining)',
+        places:[
+          { name:'Momotaro', rating:4.7, price:'$$$$', desc:'Chicago\'s most beautiful Japanese restaurant. Sushi, izakaya bites, and wagyu that melts before you chew.', tags:['Izakaya Style','Late Night'], lat:41.8847, lng:-87.6499, budget:95 },
+          { name:'Slurp Slurp', rating:4.5, price:'$$', desc:'Ramen done properly. Broths that take 48 hours, noodles made in house, toppings you didn\'t know you needed.', tags:['Ramen','Late Night'], lat:41.9053, lng:-87.6775, budget:20 },
+          { name:'Smyth', rating:4.8, price:'$$$$', desc:'Not strictly Asian, but the Japanese-influenced tasting menu here is one of Chicago\'s finest dining experiences.', tags:['Tasting Menu','Michelin Star'], lat:41.8838, lng:-87.6755, budget:185 }
+        ]
+      },
+      'Breakfast': {
+        emoji:'🥞', color:'var(--cat-dining)',
+        places:[
+          { name:'Orange', rating:4.5, price:'$$', desc:'Frushi (sushi made with fruit), creative egg dishes, and the longest brunch lines in Chicago. All worth it.', tags:['Weekend Brunch','Creative Menu'], lat:41.8867, lng:-87.6319, budget:25 },
+          { name:'Bongo Room', rating:4.4, price:'$$', desc:'Wicker Park staple. Outrageous pancake specials that change seasonally. The kind of place you\'d move neighborhoods for.', tags:['Pancakes','Neighborhood Staple'], lat:41.9087, lng:-87.6756, budget:22 },
+          { name:'M. Henry', rating:4.5, price:'$$', desc:'Andersonville\'s neighborhood brunch spot. Farm-fresh ingredients, zero pretension, always a warm room.', tags:['Farm Fresh','Andersonville'], lat:41.9802, lng:-87.6681, budget:24 }
+        ]
+      },
+      'Seafood': {
+        emoji:'🦞', color:'var(--cat-dining)',
+        places:[
+          { name:'GT Fish & Oyster', rating:4.6, price:'$$$', desc:'The best oyster selection in Chicago. A raw bar that rivals any coastal city, in the middle of Illinois.', tags:['Raw Bar','Lunch & Dinner'], lat:41.8867, lng:-87.6258, budget:70 },
+          { name:'Shaw\'s Crab House', rating:4.5, price:'$$$', desc:'Chicago institution since 1984. Classic seafood done right — crab cakes, lobster bisque, and a great oyster bar.', tags:['Classic Seafood','Business Lunch'], lat:41.8867, lng:-87.6265, budget:75 },
+          { name:'Half Acre Brewing + Seafood', rating:4.3, price:'$$', desc:'Craft beer meets fresh seafood. Fish tacos, shrimp rolls, and a patio that stays packed all summer.', tags:['Craft Beer','Casual'], lat:41.9792, lng:-87.6820, budget:35 }
+        ]
+      }
+    },
+    stays: {
+      'Luxury': {
+        emoji:'✨', color:'var(--cat-stays)',
+        places:[
+          { name:'The Langham Chicago', rating:4.9, price:'$$$$', desc:'Perched in a landmark Mies van der Rohe building over the Chicago River. Impeccable service, stunning views, and a spa that rivals the world\'s best.', tags:['Riverwalk Access','Award-Winning Spa'], lat:41.8869, lng:-87.6259, budget:450 },
+          { name:'Four Seasons Chicago', rating:4.8, price:'$$$$', desc:'Gold Coast landmark. The pool on the 52nd floor has the best view in Chicago. Old-world luxury, modern amenities.', tags:['Gold Coast','Rooftop Pool'], lat:41.8997, lng:-87.6239, budget:500 },
+          { name:'Virgin Hotels Chicago', rating:4.7, price:'$$$', desc:'Sleek, playful, and packed with personality. The rooftop bar is one of the best in the city.', tags:['Rooftop Bar','Loop Location'], lat:41.8775, lng:-87.6278, budget:350 }
+        ]
+      },
+      'Boutique': {
+        emoji:'🏡', color:'var(--cat-stays)',
+        places:[
+          { name:'The Robey Chicago', rating:4.6, price:'$$$', desc:'A 1929 Art Deco Northwest Tower converted into a stunning boutique hotel. Wicker Park location means you\'re steps from everything.', tags:['Art Deco','Wicker Park'], lat:41.9087, lng:-87.6785, budget:250 },
+          { name:'Hotel Zachary', rating:4.5, price:'$$$', desc:'Directly across from Wrigley Field. Rooftop terrace, great restaurant, and a sense of being in the middle of Chicago culture.', tags:['Wrigley Field','Rooftop'], lat:41.9477, lng:-87.6555, budget:280 },
+          { name:'The Guesthouse Hotel', rating:4.6, price:'$$$', desc:'Hidden gem in Andersonville. Boutique, calm, beautiful design. A neighborhood hotel that feels like a home.', tags:['Andersonville','Quiet'], lat:41.9806, lng:-87.6685, budget:220 }
+        ]
+      },
+      'Mid-Range': {
+        emoji:'🏨', color:'var(--cat-stays)',
+        places:[
+          { name:'Kinzie Hotel', rating:4.4, price:'$$', desc:'River North location, rooftop terrace, great design. One of Chicago\'s best value stays — close to everything without the luxury price.', tags:['River North','Good Value'], lat:41.8891, lng:-87.6347, budget:180 },
+          { name:'Hyatt Centric The Loop', rating:4.3, price:'$$', desc:'Perfect for exploring the city. Central location, clean rooms, helpful staff. No frills, all function.', tags:['The Loop','Central'], lat:41.8810, lng:-87.6282, budget:160 },
+          { name:'Freehand Chicago', rating:4.3, price:'$$', desc:'Design-forward hotel with a bar that turns into one of Chicago\'s best social scenes on weekends. River North energy.', tags:['Social Scene','River North'], lat:41.8901, lng:-87.6355, budget:170 }
+        ]
+      },
+      'Budget': {
+        emoji:'💰', color:'var(--cat-stays)',
+        places:[
+          { name:'Chicago Getaway Hostel', rating:4.1, price:'$', desc:'Clean, social, and well-located in Lincoln Park. Private rooms available. The common spaces make meeting fellow travelers easy.', tags:['Lincoln Park','Private Rooms'], lat:41.9216, lng:-87.6447, budget:55 },
+          { name:'HI Chicago Hostel', rating:4.2, price:'$', desc:'Official Hostelling International property downtown. Close to everything, organized social events, safe and well-run.', tags:['Downtown','Social Events'], lat:41.8786, lng:-87.6277, budget:45 },
+          { name:'Airbnb — Logan Square', rating:4.5, price:'$$', desc:'Rent an entire apartment in one of Chicago\'s most vibrant neighborhoods. Walking distance to incredible restaurants, bars, and the 606 trail.', tags:['Entire Place','Logan Square'], lat:41.9227, lng:-87.7063, budget:120 }
+        ]
+      }
+    },
+    experiences: {
+      'Architecture': {
+        emoji:'🏛', color:'var(--cat-exp)',
+        places:[
+          { name:'Chicago Architecture Boat Tour', rating:4.9, price:'$$', desc:'The best 90 minutes you\'ll spend in Chicago. Expert guides take you down the river pointing out 50+ buildings and 150 years of history.', tags:['Must-Do','90 Minutes'], lat:41.8864, lng:-87.6237, budget:47 },
+          { name:'Chicago Cultural Center', rating:4.7, price:'Free', desc:'Two stunning Tiffany glass domes, rotating art exhibitions, and absolutely free. One of the world\'s great public buildings.', tags:['Free','Tiffany Domes'], lat:41.8836, lng:-87.6248, budget:0 },
+          { name:'Robie House Tour', rating:4.7, price:'$$', desc:'Frank Lloyd Wright\'s masterpiece. A guided tour of the most important residential building in American architecture.', tags:['Frank Lloyd Wright','Hyde Park'], lat:41.7886, lng:-87.5997, budget:20 }
+        ]
+      },
+      'Museums': {
+        emoji:'🎨', color:'var(--cat-exp)',
+        places:[
+          { name:'Art Institute of Chicago', rating:4.8, price:'$$', desc:'One of the world\'s great art museums. The Impressionist collection, the Modern wing, Sunday on La Grande Jatte — plan for half a day.', tags:['World Class','Half Day'], lat:41.8796, lng:-87.6237, budget:25 },
+          { name:'Field Museum', rating:4.7, price:'$$', desc:'Natural history at its finest. Sue the T-Rex, Egyptian mummies, and gems that will make you forget how long you\'ve been walking.', tags:['Natural History','Sue the T-Rex'], lat:41.8660, lng:-87.6169, budget:24 },
+          { name:'Museum of Science & Industry', rating:4.6, price:'$$', desc:'The most interactive museum in Chicago. German U-Boat, coal mine, and a tornado you can walk into. Best with someone who likes to learn.', tags:['Interactive','Hyde Park'], lat:41.7906, lng:-87.5831, budget:22 }
+        ]
+      },
+      'Parks & Outdoors': {
+        emoji:'🌿', color:'var(--cat-exp)',
+        places:[
+          { name:'Millennium Park', rating:4.8, price:'Free', desc:'The Bean, Crown Fountain, Lurie Garden, free concerts. The world\'s greatest urban park centerpiece. Go at sunrise for the best photos.', tags:['Free','The Bean'], lat:41.8826, lng:-87.6226, budget:0 },
+          { name:'The 606 Trail', rating:4.6, price:'Free', desc:'An elevated rail trail through four neighborhoods. Walk, run, or bike from Logan Square to Wicker Park. The best way to see residential Chicago.', tags:['Free','Bike Friendly'], lat:41.9135, lng:-87.6970, budget:0 },
+          { name:'Lincoln Park Conservatory', rating:4.5, price:'Free', desc:'Victorian glass greenhouse with tropical plants, ferns, and orchids. Free to visit, peaceful escape from the city.', tags:['Free','Greenhouse'], lat:41.9225, lng:-87.6359, budget:0 }
+        ]
+      },
+      'Neighborhoods': {
+        emoji:'🏘', color:'var(--cat-exp)',
+        places:[
+          { name:'Logan Square Farmers Market', rating:4.7, price:'Free', desc:'Sunday mornings in Logan Square. Local produce, artisan food, coffee, live music. The heartbeat of the neighborhood.', tags:['Sunday Only','Seasonal'], lat:41.9213, lng:-87.7079, budget:20 },
+          { name:'Chicago Riverwalk', rating:4.7, price:'Free', desc:'Walk the entire Riverwalk from Lake Shore Drive to Lake Street. Every section has its own personality — kayak rentals, bars, restaurants.', tags:['Free','Kayak Rentals'], lat:41.8872, lng:-87.6366, budget:10 },
+          { name:'Pilsen Art Walk', rating:4.5, price:'Free', desc:'Chicago\'s mural district. Every wall tells a story. The neighborhood galleries open late on Second Fridays.', tags:['Free','Art District'], lat:41.8566, lng:-87.6619, budget:0 }
+        ]
+      },
+      'Sports': {
+        emoji:'⚾', color:'var(--cat-exp)',
+        places:[
+          { name:'Wrigley Field — Cubs Game', rating:4.8, price:'$$$', desc:'America\'s most iconic ballpark. Day game, bleacher seats, Old Style beer, and the ivy on the outfield wall. A bucket list experience.', tags:['Bleacher Seats','Ivy Wall'], lat:41.9484, lng:-87.6556, budget:80 },
+          { name:'United Center — Bulls/Blackhawks', rating:4.5, price:'$$$', desc:'The house that Jordan built. Whether you catch a Bulls game or a Blackhawks match, United Center delivers atmosphere.', tags:['Stadium Experience','West Side'], lat:41.8806, lng:-87.6742, budget:90 },
+          { name:'Chicago Riverwalk Kayaking', rating:4.6, price:'$$', desc:'Paddle the Chicago River through the downtown canyon of skyscrapers. A completely different view of the city from the water.', tags:['Active','River Views'], lat:41.8872, lng:-87.6350, budget:35 }
+        ]
+      }
+    },
+    social: {
+      'Rooftop Bars': {
+        emoji:'🌆', color:'var(--cat-social)',
+        places:[
+          { name:'Cindy\'s', rating:4.6, price:'$$$', desc:'Rooftop bar at The Chicago Athletic Association. Views of Millennium Park and the lake. The kind of place that makes you proud to live in or visit this city.', tags:['Lake Views','Hotel Bar'], lat:41.8824, lng:-87.6261, budget:55 },
+          { name:'Raised Bar', rating:4.5, price:'$$$', desc:'Renaissance Hotel rooftop overlooking the river and Michigan Avenue. Craft cocktails, great food, unbeatable views at sunset.', tags:['River Views','Sunset Spot'], lat:41.8850, lng:-87.6267, budget:50 },
+          { name:'Virgin Hotels — The Upstairs', rating:4.6, price:'$$$', desc:'Loop rooftop with the best view of The Bean from above. Young crowd, creative cocktails, heated in winter.', tags:['Year-Round','Creative Cocktails'], lat:41.8775, lng:-87.6278, budget:55 }
+        ]
+      },
+      'Cocktail Lounges': {
+        emoji:'🍸', color:'var(--cat-social)',
+        places:[
+          { name:'The Violet Hour', rating:4.7, price:'$$$', desc:'Wicker Park\'s legendary cocktail bar. No sign outside, strict dress code (no sports jerseys), and the best Negroni in Chicago. Arrive early.', tags:['No Phone Rule','Craft Cocktails'], lat:41.9084, lng:-87.6770, budget:50 },
+          { name:'Three Dots and a Dash', rating:4.6, price:'$$$', desc:'Chicago\'s finest tiki bar, hidden underground in River North. Punch bowls for groups, flaming cocktails, and a secret alley entrance.', tags:['Hidden Bar','Tiki Cocktails'], lat:41.8905, lng:-87.6318, budget:55 },
+          { name:'Milk Room', rating:4.7, price:'$$$$', desc:'Eight seats. A rotating menu of rare spirits. The most exclusive drinking experience in Chicago — reservations are months out.', tags:['8 Seats Only','Rare Spirits'], lat:41.8832, lng:-87.6271, budget:80 }
+        ]
+      },
+      'Wine Bars': {
+        emoji:'🍷', color:'var(--cat-social)',
+        places:[
+          { name:'Webster\'s Wine Bar', rating:4.6, price:'$$', desc:'Lincoln Park institution. 200+ bottles, knowledgeable staff, cheese plates that deserve their own category. Relaxed and unpretentious.', tags:['200+ Wines','Cheese & Charcuterie'], lat:41.9217, lng:-87.6556, budget:45 },
+          { name:'City Winery Chicago', rating:4.5, price:'$$$', desc:'Working winery in the West Loop. Taste their house wines, catch a live show, eat dinner. A full evening in one room.', tags:['Live Music','House Wine'], lat:41.8827, lng:-87.6517, budget:60 },
+          { name:'The Vig', rating:4.4, price:'$$', desc:'Wicker Park wine bar with a rotating selection of natural wines and a small but excellent food menu. Neighborhood gem.', tags:['Natural Wine','Neighborhood'], lat:41.9089, lng:-87.6763, budget:40 }
+        ]
+      },
+      'Breweries': {
+        emoji:'🍺', color:'var(--cat-social)',
+        places:[
+          { name:'Revolution Brewing', rating:4.6, price:'$$', desc:'Logan Square\'s beloved flagship brewery. Anti-Hero IPA on draft, great food, always packed with Chicago locals. The real Chicago bar experience.', tags:['Logan Square','Anti-Hero IPA'], lat:41.9225, lng:-87.7079, budget:30 },
+          { name:'Goose Island Fulton Street', rating:4.5, price:'$$', desc:'The original Goose Island taproom. Rare barrel-aged beers, brewery tours, and the Bourbon County preview drops here first.', tags:['Brewery Tours','Barrel Aged'], lat:41.8868, lng:-87.6526, budget:30 },
+          { name:'Half Acre Beer Company', rating:4.6, price:'$$', desc:'Lincoln Square taproom with outdoor seating and some of the most thoughtfully brewed beer in Chicago. Saturdays are special.', tags:['Lincoln Square','Outdoor Seating'], lat:41.9792, lng:-87.6820, budget:28 }
+        ]
+      },
+      'Dive Bars': {
+        emoji:'🎱', color:'var(--cat-social)',
+        places:[
+          { name:'Delilah\'s', rating:4.5, price:'$', desc:'Lincoln Park dive bar since 1993. 600 whiskeys, punk rock on the jukebox, and the cheapest Old Style in the neighborhood. Chicago as it should be.', tags:['600 Whiskeys','Cash Only'], lat:41.9216, lng:-87.6542, budget:20 },
+          { name:'Simon\'s Tavern', rating:4.4, price:'$', desc:'Andersonville gem since 1934. Swedish nautical theme, cheap drinks, and a warmth that makes you want to stay all night.', tags:['Since 1934','Andersonville'], lat:41.9806, lng:-87.6686, budget:18 },
+          { name:'The Map Room', rating:4.4, price:'$', desc:'Bucktown bar plastered with vintage maps from around the world. Craft beers, world travelers, and no pretension whatsoever.', tags:['Craft Beer','Bucktown'], lat:41.9074, lng:-87.6793, budget:22 }
+        ]
+      }
+    },
+    wellness: {
+      'Spas': {
+        emoji:'🛁', color:'var(--cat-wellness)',
+        places:[
+          { name:'Aire Ancient Baths', rating:4.8, price:'$$$$', desc:'A converted 1902 boiler factory in the West Loop. Thermal baths, steam caves, salt caves, and a silence that makes you forget the city exists.', tags:['Thermal Baths','Silence Required'], lat:41.8827, lng:-87.6517, budget:95 },
+          { name:'Spa Space', rating:4.6, price:'$$$', desc:'River North day spa focused on results-driven treatments. Excellent massages, facials, and a genuinely knowledgeable staff.', tags:['River North','Results-Focused'], lat:41.8891, lng:-87.6318, budget:150 },
+          { name:'Zen Float Spa', rating:4.5, price:'$$$', desc:'Sensory deprivation float tanks in Wicker Park. 60 minutes in near-zero gravity, total darkness, and zero sound. Reset completely.', tags:['Float Tanks','Wicker Park'], lat:41.9087, lng:-87.6785, budget:80 }
+        ]
+      },
+      'Yoga & Movement': {
+        emoji:'🧘', color:'var(--cat-wellness)',
+        places:[
+          { name:'CorePower Yoga', rating:4.5, price:'$$', desc:'Hot yoga classes across multiple Chicago locations. Heated rooms, strong instruction, and the kind of workout that earns the post-class meal.', tags:['Hot Yoga','Multiple Locations'], lat:41.8879, lng:-87.6320, budget:28 },
+          { name:'YogaSix', rating:4.4, price:'$$', desc:'Wicker Park studio with a range of class styles — power, restore, deep stretch. First class is always discounted for visitors.', tags:['Visitor Discount','Multiple Styles'], lat:41.9087, lng:-87.6767, budget:25 },
+          { name:'Chicago Athletic Club', rating:4.5, price:'$$$', desc:'Full-service athletic facility with a lap pool, group fitness, and single-visit options for visitors. Gold Coast location.', tags:['Lap Pool','Gold Coast'], lat:41.9007, lng:-87.6249, budget:35 }
+        ]
+      },
+      'Running & Outdoors': {
+        emoji:'🏃', color:'var(--cat-wellness)',
+        places:[
+          { name:'Lakefront Trail', rating:4.9, price:'Free', desc:'18 miles of uninterrupted lakefront path. Chicago\'s greatest gift to its people. Sunrise on the lake is something you\'ll describe for years.', tags:['Free','18 Miles','Sunrise'], lat:41.8978, lng:-87.6152, budget:0 },
+          { name:'Lincoln Park Running Path', rating:4.7, price:'Free', desc:'The classic Chicago run — through Lincoln Park, past the Zoo, along the lake. 5-10K depending on your turn-around point.', tags:['Free','Shaded Path'], lat:41.9225, lng:-87.6359, budget:0 },
+          { name:'Fleet Feet Run Club', rating:4.5, price:'Free', desc:'Free group runs every Tuesday and Thursday from the Lincoln Square store. All paces welcome, free beer afterward.', tags:['Free','Social Run','Beer After'], lat:41.9759, lng:-87.6851, budget:0 }
+        ]
+      },
+      'Recovery & Reset': {
+        emoji:'🌿', color:'var(--cat-wellness)',
+        places:[
+          { name:'Chicago Integrative Medicine', rating:4.6, price:'$$$', desc:'Acupuncture, cupping, and integrative medicine in River North. The kind of treatment that reminds you what your body is supposed to feel like.', tags:['Acupuncture','River North'], lat:41.8891, lng:-87.6347, budget:90 },
+          { name:'Chicago Botanic Garden', rating:4.8, price:'$', desc:'385 acres of curated gardens in Glencoe. A 40-minute drive but an entirely different world. Reset completely.', tags:['Day Trip','385 Acres'], lat:42.1465, lng:-87.7850, budget:5 },
+          { name:'Russian Baths — Chicago', rating:4.4, price:'$$', desc:'Wicker Park bathhouse with oak platza massage, eucalyptus steam, and cold plunge pools. Old world tradition, completely restorative.', tags:['Platza Massage','Cold Plunge'], lat:41.9087, lng:-87.6780, budget:45 }
+        ]
+      }
+    }
+  },
+
+  'New York, NY': {
+    dining: {
+      'American': {
+        emoji:'🍔', color:'var(--cat-dining)',
+        places:[
+          { name:'Spotted Pig', rating:4.6, price:'$$$', desc:'West Village gastropub legend. The gnudi alone is worth the trip. Arrive early or wait — there are no reservations.', tags:['No Reservations','West Village'], lat:40.7339, lng:-74.0058, budget:65 },
+          { name:'Shake Shack Madison Square', rating:4.5, price:'$', desc:'The original. The ShackBurger that started a movement. There\'s a reason the line wraps around the park.', tags:['Original Location','Quick Bite'], lat:40.7418, lng:-73.9879, budget:15 },
+          { name:'Balthazar', rating:4.7, price:'$$$', desc:'SoHo brasserie that never goes out of style. Steak frites, raw bar, perfect Croque Monsieur. Paris in New York.', tags:['SoHo Classic','Raw Bar'], lat:40.7224, lng:-74.0008, budget:80 }
+        ]
+      },
+      'Italian': {
+        emoji:'🍝', color:'var(--cat-dining)',
+        places:[
+          { name:'Via Carota', rating:4.8, price:'$$$', desc:'The West Village\'s most beloved Italian. Seasonal vegetables, handmade pasta, and a room that feels like you\'ve been transported to Rome.', tags:['No Reservations','West Village'], lat:40.7337, lng:-74.0041, budget:75 },
+          { name:'Don Angie', rating:4.7, price:'$$$', desc:'Modern Italian with a sense of humor. The pinwheel lasagna is the most Instagrammed dish in the West Village, and worth every pixel.', tags:['West Village','Creative Italian'], lat:40.7363, lng:-74.0047, budget:85 },
+          { name:'Lilia', rating:4.8, price:'$$$', desc:'Missy Robbins\' Williamsburg masterpiece. Mafaldini with pink peppercorns, sheep\'s milk cheese agnolotti. Book two months ahead.', tags:['Williamsburg','Book Ahead'], lat:40.7206, lng:-73.9562, budget:90 }
+        ]
+      },
+      'Pizza': {
+        emoji:'🍕', color:'var(--cat-dining)',
+        places:[
+          { name:'Di Fara Pizza', rating:4.7, price:'$$', desc:'Dom DeMarco has been making pizza in Brooklyn since 1964. Watch him stretch the dough, snip the basil, drizzle the oil. A living legend.', tags:['Brooklyn Icon','Cash Only'], lat:40.6246, lng:-73.9617, budget:30 },
+          { name:'Lucali', rating:4.8, price:'$$', desc:'Brooklyn\'s most coveted pizza. BYOB, cash only, and you\'ll wait — but the thin-crust coal-fired pie is the best in New York.', tags:['BYOB','Cash Only'], lat:40.6776, lng:-73.9992, budget:35 },
+          { name:'Joe\'s Pizza', rating:4.6, price:'$', desc:'The benchmark New York slice. Plain cheese, fold it, eat it over the trash can. That\'s the move. $3.', tags:['Classic Slice','West Village'], lat:40.7330, lng:-74.0018, budget:3 }
+        ]
+      },
+      'Asian': {
+        emoji:'🍜', color:'var(--cat-dining)',
+        places:[
+          { name:'Momofuku Noodle Bar', rating:4.6, price:'$$$', desc:'David Chang\'s original. Ramen that changed New York, pork buns that changed the world. Still one of the best.', tags:['East Village','Pork Buns'], lat:40.7264, lng:-73.9839, budget:55 },
+          { name:'Xi\'an Famous Foods', rating:4.5, price:'$', desc:'Hand-pulled noodles and spicy lamb burgers from Xi\'an, China. Multiple locations, zero pretension, maximum flavor.', tags:['Cheap Eat','Multiple Locations'], lat:40.7571, lng:-73.9951, budget:15 },
+          { name:'Jeju Noodle Bar', rating:4.7, price:'$$$', desc:'Korean-inspired ramen in the West Village. The pork broth takes 12 hours. Worth every minute of that wait.', tags:['West Village','Korean Ramen'], lat:40.7335, lng:-74.0036, budget:28 }
+        ]
+      },
+      'Deli': {
+        emoji:'🥪', color:'var(--cat-dining)',
+        places:[
+          { name:'Katz\'s Delicatessen', rating:4.6, price:'$$', desc:'Since 1888. The pastrami sandwich that inspired a famous movie scene. Stand in line, get your ticket, eat the best cured meat of your life.', tags:['Since 1888','Lower East Side'], lat:40.7223, lng:-73.9874, budget:25 },
+          { name:'Russ & Daughters', rating:4.7, price:'$$', desc:'The finest Jewish appetizing shop in America. Smoked fish, bagels, cream cheese — a breakfast ritual since 1914.', tags:['Since 1914','Lower East Side'], lat:40.7222, lng:-73.9880, budget:30 },
+          { name:'Mile End Deli', rating:4.5, price:'$$', desc:'Montreal-style smoked meat in Brooklyn. The smoked meat sandwich is revelatory. Grab it with a black-and-white cookie.', tags:['Montreal Style','Boerum Hill'], lat:40.6869, lng:-73.9896, budget:22 }
+        ]
+      }
+    },
+    stays: {
+      'Luxury': {
+        emoji:'✨', color:'var(--cat-stays)',
+        places:[
+          { name:'The Mark Hotel', rating:4.9, price:'$$$$', desc:'Upper East Side icon. Jean-Georges restaurant, a staff that remembers your name, and rooms that feel like the best apartment in the city.', tags:['Upper East Side','Jean-Georges'], lat:40.7747, lng:-73.9640, budget:700 },
+          { name:'Aman New York', rating:4.9, price:'$$$$', desc:'The most exclusive address in New York. Rooftop spa, private club, and the kind of quiet that Manhattan rarely offers.', tags:['Ultra Luxury','Crown Building'], lat:40.7617, lng:-73.9797, budget:1200 },
+          { name:'The NoMad Hotel', rating:4.7, price:'$$$$', desc:'Flatiron landmark with one of New York\'s great restaurant lobbies. Romantic, classic, and never goes out of style.', tags:['Flatiron','Restaurant Lobby'], lat:40.7447, lng:-73.9889, budget:450 }
+        ]
+      },
+      'Boutique': {
+        emoji:'🏡', color:'var(--cat-stays)',
+        places:[
+          { name:'The Williamsburg Hotel', rating:4.6, price:'$$$', desc:'Brooklyn\'s best boutique. Rooftop pool and bar, stunning Manhattan views, and you\'re walking distance from the best of Williamsburg.', tags:['Rooftop Pool','Brooklyn'], lat:40.7141, lng:-73.9636, budget:350 },
+          { name:'Hotel 50 Bowery', rating:4.5, price:'$$$', desc:'Chinatown boutique with stunning rooftop views of the Manhattan Bridge. Smart design, excellent location, great value for New York.', tags:['Chinatown','Bridge Views'], lat:40.7148, lng:-73.9977, budget:280 },
+          { name:'The Hoxton Williamsburg', rating:4.5, price:'$$$', desc:'London import done right in Brooklyn. Great lobby bar, smart rooms, and a rooftop that fills up fast on weekends.', tags:['Brooklyn','Lobby Bar'], lat:40.7192, lng:-73.9631, budget:300 }
+        ]
+      },
+      'Mid-Range': {
+        emoji:'🏨', color:'var(--cat-stays)',
+        places:[
+          { name:'Pod 51 Hotel', rating:4.2, price:'$$', desc:'Midtown value play. Small but smart rooms, excellent amenities, and right on 51st Street. New York made affordable.', tags:['Midtown','Value'], lat:40.7573, lng:-73.9727, budget:180 },
+          { name:'Ace Hotel New York', rating:4.4, price:'$$$', desc:'NoMad\'s creative hub. The lobby is always buzzing, the rooms are smart, and the rooftop bar is a scene on its own.', tags:['NoMad','Creative Scene'], lat:40.7445, lng:-73.9886, budget:280 },
+          { name:'The Jane Hotel', rating:4.3, price:'$$', desc:'West Village historic landmark with cabin-style rooms. Small, atmospheric, and steps from everything downtown.', tags:['West Village','Historic'], lat:40.7383, lng:-74.0083, budget:200 }
+        ]
+      },
+      'Budget': {
+        emoji:'💰', color:'var(--cat-stays)',
+        places:[
+          { name:'HI NYC Hostel', rating:4.1, price:'$', desc:'Upper West Side hostel in a historic building. Clean, organized, and the best location for the price in Manhattan.', tags:['Upper West Side','Clean'], lat:40.7870, lng:-73.9755, budget:55 },
+          { name:'Airbnb — Bushwick', rating:4.4, price:'$', desc:'A room or apartment in Brooklyn\'s most artistic neighborhood. Murals everywhere, incredible food, and easy L train access to Manhattan.', tags:['Bushwick','Art District'], lat:40.6942, lng:-73.9177, budget:85 },
+          { name:'The Local NYC', rating:4.3, price:'$', desc:'Long Island City hostel with stunning Manhattan skyline views. The rooftop alone is worth it. QR train to Midtown.', tags:['Skyline Views','LIC'], lat:40.7489, lng:-73.9406, budget:60 }
+        ]
+      }
+    },
+    experiences: {
+      'Iconic': {
+        emoji:'🗽', color:'var(--cat-exp)',
+        places:[
+          { name:'Top of the Rock', rating:4.8, price:'$$$', desc:'The best view in New York. Unobstructed 360° views including the Empire State Building. Sunset tickets are worth twice the price.', tags:['360° Views','Sunset Tickets'], lat:40.7594, lng:-73.9796, budget:40 },
+          { name:'Brooklyn Bridge Walk', rating:4.7, price:'Free', desc:'Walk from Manhattan to Brooklyn. Free, iconic, and the view of lower Manhattan from the middle of the bridge is the cover of every travel magazine.', tags:['Free','Classic NYC'], lat:40.7061, lng:-73.9969, budget:0 },
+          { name:'The High Line', rating:4.7, price:'Free', desc:'Elevated park on a converted freight rail line above Chelsea. Art installations, Hudson River views, and the best people-watching in the city.', tags:['Free','Chelsea','Art'], lat:40.7480, lng:-74.0048, budget:0 }
+        ]
+      },
+      'Museums': {
+        emoji:'🎨', color:'var(--cat-exp)',
+        places:[
+          { name:'The Metropolitan Museum of Art', rating:4.9, price:'$$', desc:'One of the world\'s great museums. 5,000 years of art across 17 curatorial departments. Budget a full day and you\'ll still miss things.', tags:['World Class','Full Day'], lat:40.7794, lng:-73.9632, budget:25 },
+          { name:'MoMA', rating:4.8, price:'$$$', desc:'Monet\'s Water Lilies, Starry Night, Warhol, Basquiat. Modern art\'s cathedral in Midtown.', tags:['Midtown','Modern Art'], lat:40.7614, lng:-73.9776, budget:30 },
+          { name:'The Frick Collection', rating:4.8, price:'$$', desc:'Gilded Age mansion turned museum. Vermeer, Rembrandt, El Greco — in intimate rooms where you can stand inches from the canvas.', tags:['Upper East Side','Intimate Scale'], lat:40.7712, lng:-73.9676, budget:22 }
+        ]
+      }
+    },
+    social: {
+      'Rooftop Bars': {
+        emoji:'🌆', color:'var(--cat-social)',
+        places:[
+          { name:'230 Fifth Rooftop Bar', rating:4.5, price:'$$$', desc:'The Empire State Building is so close you feel like you could reach out and touch it. Open year-round with heated igloos in winter.', tags:['Empire State Views','Year-Round'], lat:40.7433, lng:-73.9883, budget:45 },
+          { name:'The Press Lounge', rating:4.6, price:'$$$', desc:'Hell\'s Kitchen rooftop with 360° views of the Hudson and Manhattan. Sophisticated crowd, excellent cocktails.', tags:['Hudson Views','Hell\'s Kitchen'], lat:40.7629, lng:-73.9958, budget:55 },
+          { name:'Westlight', rating:4.6, price:'$$$', desc:'Brooklyn rooftop with the definitive Manhattan skyline view. The city laid out in front of you, cocktail in hand.', tags:['Brooklyn','Manhattan Views'], lat:40.7197, lng:-73.9631, budget:55 }
+        ]
+      },
+      'Cocktail Lounges': {
+        emoji:'🍸', color:'var(--cat-social)',
+        places:[
+          { name:'Death & Co', rating:4.7, price:'$$$', desc:'East Village cocktail bar that defined modern mixology. No reservations, expect to wait, and prepare to be amazed.', tags:['East Village','Craft Cocktails'], lat:40.7254, lng:-73.9827, budget:60 },
+          { name:'Attaboy', rating:4.7, price:'$$$', desc:'Lower East Side bar with no menu. Tell the bartender what you\'re in the mood for and let them create. Pure craft.', tags:['No Menu','Lower East Side'], lat:40.7199, lng:-73.9874, budget:65 },
+          { name:'Employees Only', rating:4.6, price:'$$$', desc:'West Village supper club and bar that closes late. The best post-dinner cocktails in the city, served to a beautiful crowd.', tags:['West Village','Late Night'], lat:40.7333, lng:-74.0051, budget:60 }
+        ]
+      }
+    },
+    wellness: {
+      'Spas': {
+        emoji:'🛁', color:'var(--cat-wellness)',
+        places:[
+          { name:'Aire Ancient Baths NYC', rating:4.8, price:'$$$$', desc:'Thermal bathing experience in a 19th century building in Tribeca. Salt pool, hot pool, cold plunge, steam cave. Total restoration.', tags:['Thermal Baths','Tribeca'], lat:40.7185, lng:-74.0096, budget:99 },
+          { name:'Spa at The Peninsula', rating:4.8, price:'$$$$', desc:'Midtown luxury spa on the 23rd floor. City views, expert treatments, and a pool that lets you forget where you are.', tags:['Midtown','City Views'], lat:40.7618, lng:-73.9749, budget:250 },
+          { name:'Juvenex Spa', rating:4.5, price:'$$$', desc:'Korean spa in Midtown open 24 hours. Jade hot tubs, steam rooms, and full spa services. The only 24-hour spa in Manhattan.', tags:['24 Hours','Korean Spa'], lat:40.7483, lng:-73.9903, budget:50 }
+        ]
+      },
+      'Running & Outdoors': {
+        emoji:'🏃', color:'var(--cat-wellness)',
+        places:[
+          { name:'Central Park Running Loop', rating:4.9, price:'Free', desc:'The 6-mile loop around Central Park. New York\'s ultimate running route. Join thousands of New Yorkers every morning.', tags:['Free','6 Mile Loop'], lat:40.7851, lng:-73.9683, budget:0 },
+          { name:'Hudson River Greenway', rating:4.7, price:'Free', desc:'Run or bike the entire west side of Manhattan along the Hudson. 11 miles of waterfront path. Start at Battery Park, end at the GW Bridge.', tags:['Free','11 Miles'], lat:40.7029, lng:-74.0173, budget:0 },
+          { name:'New York Road Runners Club Run', rating:4.6, price:'Free', desc:'NYRR offers free group runs in Central Park several mornings a week. All paces, all abilities, all welcome.', tags:['Free','Social Run'], lat:40.7764, lng:-73.9709, budget:0 }
+        ]
+      }
+    }
+  },
+
+  'Lisbon, Portugal': {
+    dining: {
+      'Portuguese': {
+        emoji:'🐟', color:'var(--cat-dining)',
+        places:[
+          { name:'Belcanto', rating:4.9, price:'$$$$', desc:'Two Michelin stars. José Avillez\'s reinterpretation of Portuguese cuisine — familiar flavors made extraordinary. One of Europe\'s great restaurants.', tags:['2 Michelin Stars','Chiado'], lat:38.7107, lng:-9.1420, budget:180 },
+          { name:'Taberna da Rua das Flores', rating:4.7, price:'$$$', desc:'Chiado wine bar serving the best petiscos in Lisbon. Razor clams, cured meats, and a constantly changing blackboard menu.', tags:['Petiscos','Chiado'], lat:38.7107, lng:-9.1422, budget:45 },
+          { name:'A Cevicheria', rating:4.6, price:'$$$', desc:'Kiko Martins\' Príncipe Real gem. Peruvian-inspired dishes with Portuguese ingredients. The octopus ceviche is worth crossing the Atlantic for.', tags:['Príncipe Real','Ceviche'], lat:38.7158, lng:-9.1490, budget:55 }
+        ]
+      },
+      'Pastéis & Breakfast': {
+        emoji:'🥐', color:'var(--cat-dining)',
+        places:[
+          { name:'Pastéis de Belém', rating:4.8, price:'$', desc:'The original pastel de nata, made to the same secret recipe since 1837. Warm, custard-filled, dusted with cinnamon. The reason to visit Belém.', tags:['Since 1837','Belém','Queue Worthy'], lat:38.6979, lng:-9.2038, budget:5 },
+          { name:'Padaria Portuguesa', rating:4.5, price:'$', desc:'Local bakery chain beloved by Lisboetas. Fresh bread, pastries, coffee, and fresh-squeezed orange juice. The real Lisbon morning.', tags:['Multiple Locations','Local Favorite'], lat:38.7207, lng:-9.1445, budget:8 },
+          { name:'Nicolau', rating:4.6, price:'$$', desc:'Charming Intendente breakfast spot. Avocado toast meets Portuguese pastelaria. Lines form early for a reason.', tags:['Intendente','Weekend Queue'], lat:38.7222, lng:-9.1312, budget:15 }
+        ]
+      },
+      'Seafood': {
+        emoji:'🦞', color:'var(--cat-dining)',
+        places:[
+          { name:'Cervejaria Ramiro', rating:4.8, price:'$$$', desc:'Lisbon\'s most beloved seafood institution. Garlic prawns, barnacles, clams in white wine. Order the prego (steak sandwich) to finish.', tags:['Institution','Since 1956'], lat:38.7228, lng:-9.1374, budget:70 },
+          { name:'Tasca do Chico', rating:4.7, price:'$$', desc:'Tiny Madragoa restaurant with the best grilled fish in Lisbon. No menu — whatever came off the boat. Live fado some evenings.', tags:['Live Fado','Grilled Fish'], lat:38.7087, lng:-9.1487, budget:40 },
+          { name:'Solar dos Presuntos', rating:4.6, price:'$$$', desc:'Avenida institution serving the finest regional Portuguese cuisine since 1974. The bacalhau (codfish) dishes are legendary.', tags:['Since 1974','Bacalhau'], lat:38.7170, lng:-9.1409, budget:55 }
+        ]
+      },
+      'Wine & Tapas': {
+        emoji:'🍷', color:'var(--cat-dining)',
+        places:[
+          { name:'By the Wine', rating:4.6, price:'$$', desc:'Chiado wine bar owned by José Maria da Fonseca. 130 Portuguese wines, small plates, and views of the Tejo. Perfect afternoon.', tags:['Chiado','Portuguese Wine'], lat:38.7108, lng:-9.1425, budget:35 },
+          { name:'Tasca do Vigário', rating:4.5, price:'$$', desc:'Hidden Alfama wine bar in a converted bakery. Natural wines, local cheese, and the laid-back atmosphere that defines old Lisbon.', tags:['Alfama','Natural Wine'], lat:38.7137, lng:-9.1311, budget:30 },
+          { name:'Zé da Mouraria', rating:4.4, price:'$', desc:'Traditional tavern in the Mouraria serving cheap wine and the kind of food grandmother used to make. Always full of locals.', tags:['Mouraria','Local Favorite'], lat:38.7169, lng:-9.1355, budget:20 }
+        ]
+      }
+    },
+    stays: {
+      'Luxury': {
+        emoji:'✨', color:'var(--cat-stays)',
+        places:[
+          { name:'Bairro Alto Hotel', rating:4.9, price:'$$$$', desc:'Lisbon\'s finest address. A 18th-century palace with contemporary interiors, rooftop views of the Tejo, and a restaurant by João Rodrigues.', tags:['Bairro Alto','Rooftop Tejo Views'], lat:38.7107, lng:-9.1422, budget:500 },
+          { name:'Verride Palácio Santa Catarina', rating:4.8, price:'$$$$', desc:'11-room palace hotel on the hill above the Tejo. Each room different, each view extraordinary. Total luxury, total calm.', tags:['11 Rooms','Santa Catarina'], lat:38.7073, lng:-9.1478, budget:450 },
+          { name:'Bettina & Niccolò Corallo', rating:4.7, price:'$$$', desc:'Príncipe Real townhouse boutique. Thoughtfully curated, beautifully designed, and in the neighborhood with Lisbon\'s best independent shops.', tags:['Príncipe Real','Boutique'], lat:38.7165, lng:-9.1492, budget:320 }
+        ]
+      },
+      'Boutique': {
+        emoji:'🏡', color:'var(--cat-stays)',
+        places:[
+          { name:'The Independente Hostel & Suites', rating:4.6, price:'$$$', desc:'Former Swiss Embassy in Bairro Alto converted into a beautiful boutique. The restaurant and bar are worth staying for alone.', tags:['Bairro Alto','Former Embassy'], lat:38.7135, lng:-9.1465, budget:200 },
+          { name:'Solar dos Mouros', rating:4.7, price:'$$$', desc:'12-room Alfama guesthouse with views straight to the Tejo and the Castelo. Hand-painted tiles, contemporary art, and absolute charm.', tags:['Alfama','Tejo Views'], lat:38.7141, lng:-9.1293, budget:250 },
+          { name:'Casa Balthazar', rating:4.6, price:'$$$', desc:'Mouraria townhouse with a plunge pool terrace and views of the castle. Twelve rooms, each designed with a different Lisbon story.', tags:['Mouraria','Plunge Pool'], lat:38.7175, lng:-9.1342, budget:220 }
+        ]
+      },
+      'Mid-Range': {
+        emoji:'🏨', color:'var(--cat-stays)',
+        places:[
+          { name:'Home Lisbon Hostel', rating:4.7, price:'$', desc:'Consistently rated the best hostel in Europe. Family-run, home-cooked dinner every night, and the kind of warmth you didn\'t expect from a hostel.', tags:['Best Hostel Europe','Family Dinner'], lat:38.7169, lng:-9.1399, budget:35 },
+          { name:'Lisbon Destination Hostel', rating:4.5, price:'$', desc:'Inside Rossio train station — the most convenient location in Lisbon. Doubles available, great social atmosphere.', tags:['Rossio Station','Doubles Available'], lat:38.7131, lng:-9.1388, budget:40 },
+          { name:'Alfama Patio Hostel', rating:4.5, price:'$', desc:'Alfama guesthouse with a sun-drenched patio and the sound of fado drifting up from the neighborhood. Authentic Lisbon.', tags:['Alfama','Fado Neighborhood'], lat:38.7138, lng:-9.1297, budget:45 }
+        ]
+      }
+    },
+    experiences: {
+      'Miradouros': {
+        emoji:'🌅', color:'var(--cat-exp)',
+        places:[
+          { name:'Miradouro da Graça', rating:4.8, price:'Free', desc:'Lisbon\'s best kept secret viewpoint. No tourist crowds, local beer vendors, and a 180° view of the city from the highest hill. Come at sunset.', tags:['Free','Local Secret','Sunset'], lat:38.7188, lng:-9.1299, budget:0 },
+          { name:'Miradouro de Santa Catarina', rating:4.7, price:'Free', desc:'The hippie viewpoint. Guitarists, backpackers, local kids, and one of the most democratic views in Lisbon. Ginjinha from the kiosk is mandatory.', tags:['Free','Bohemian','Ginjinha'], lat:38.7073, lng:-9.1468, budget:3 },
+          { name:'Castelo de São Jorge', rating:4.6, price:'$$', desc:'Moorish castle crowning Alfama. Walk the ramparts, watch the peacocks, and look out over the city that spread below it for 1,000 years.', tags:['Moorish Castle','Alfama','Peacocks'], lat:38.7139, lng:-9.1337, budget:15 }
+        ]
+      },
+      'Neighborhoods': {
+        emoji:'🏘', color:'var(--cat-exp)',
+        places:[
+          { name:'Alfama Walking Tour', rating:4.8, price:'$$', desc:'The medieval Moorish quarter. Tiny streets, laundry lines, fado music drifting from bars, and the city\'s oldest soul. Walk slowly. Get lost.', tags:['Medieval Quarter','Fado'], lat:38.7131, lng:-9.1311, budget:20 },
+          { name:'LX Factory Sunday Market', rating:4.7, price:'Free', desc:'Industrial complex turned creative hub. Sunday market with local designers, vintage goods, food trucks, and the best bookshop in Lisbon.', tags:['Free Entry','Sunday Only'], lat:38.7025, lng:-9.1765, budget:0 },
+          { name:'Belém Cultural Cluster', rating:4.7, price:'$$', desc:'Jerónimos Monastery, Monument to the Discoveries, Belém Tower — all within walking distance. Half a day of Portugal\'s greatest monuments.', tags:['UNESCO','Half Day'], lat:38.6979, lng:-9.2038, budget:25 }
+        ]
+      },
+      'Day Trips': {
+        emoji:'🚂', color:'var(--cat-exp)',
+        places:[
+          { name:'Sintra Palace Tour', rating:4.9, price:'$$', desc:'Fairy-tale palaces and gardens in the Sintra hills, 40 minutes from Lisbon by train. Pena Palace, Quinta da Regaleira — a full day, easily.', tags:['UNESCO','Train Accessible'], lat:38.7874, lng:-9.3906, budget:30 },
+          { name:'Setúbal Coastal Drive', rating:4.6, price:'$', desc:'Drive south of Lisbon to the Arrábida Natural Park. Turquoise water, white limestone cliffs, and beaches that belong on a different continent.', tags:['Day Trip','Car Needed'], lat:38.5164, lng:-8.8892, budget:20 },
+          { name:'Óbidos Medieval Village', rating:4.7, price:'Free', desc:'A perfectly preserved medieval walled village 1 hour north of Lisbon. White houses, bougainvillea, and ginjinha served in chocolate cups.', tags:['Free Entry','Medieval Walls'], lat:39.3622, lng:-9.1576, budget:5 }
+        ]
+      }
+    },
+    social: {
+      'Wine Bars': {
+        emoji:'🍷', color:'var(--cat-social)',
+        places:[
+          { name:'A Tabacaria', rating:4.7, price:'$$', desc:'Príncipe Real converted tobacconist turned wine bar. Natural wines, outstanding charcuterie, and a beautiful tiled interior.', tags:['Príncipe Real','Natural Wine'], lat:38.7158, lng:-9.1492, budget:35 },
+          { name:'Lust in Rio', rating:4.5, price:'$$', desc:'Santa Catarina wine bar with rooftop terrace. Portuguese wines, small plates, and the laid-back energy that defines this neighborhood.', tags:['Santa Catarina','Rooftop'], lat:38.7073, lng:-9.1470, budget:30 },
+          { name:'Vinícola Ideal', rating:4.6, price:'$', desc:'Old-school Baixa wine merchant converted to bar. Bottles from the wall, marble counters, and the cheapest great wine in Lisbon.', tags:['Baixa','Cheap & Good'], lat:38.7134, lng:-9.1388, budget:15 }
+        ]
+      },
+      'Fado': {
+        emoji:'🎸', color:'var(--cat-social)',
+        places:[
+          { name:'Mesa de Frades', rating:4.8, price:'$$$$', desc:'The most intimate fado experience in Lisbon. A former chapel in Alfama. Dinner, then the lights dim and the music begins. Transformative.', tags:['Alfama','Most Intimate'], lat:38.7133, lng:-9.1301, budget:90 },
+          { name:'Tasca do Chico', rating:4.7, price:'$$', desc:'Tiny Madragoa tavern with authentic fado some evenings. No tourist show — locals, wine, and the real thing.', tags:['Authentic','Small'], lat:38.7087, lng:-9.1487, budget:35 },
+          { name:'Chapitô à Mesa', rating:4.5, price:'$$$', desc:'Circus school restaurant on the Alfama hill with a terrace bar and occasional fado. The view at sunset is unforgettable.', tags:['Alfama Terrace','Circus School'], lat:38.7143, lng:-9.1306, budget:50 }
+        ]
+      },
+      'Bars & Nightlife': {
+        emoji:'🌙', color:'var(--cat-social)',
+        places:[
+          { name:'Park Bar', rating:4.7, price:'$$', desc:'Rooftop bar above a multistory car park in Bairro Alto. Sunset views of the 25th of April Bridge and the Tejo. Lisbon\'s best kept rooftop secret.', tags:['Rooftop','Bairro Alto'], lat:38.7098, lng:-9.1481, budget:25 },
+          { name:'Pavilhão Chinês', rating:4.6, price:'$$', desc:'Victorian bar filled floor-to-ceiling with antiques, toys, and curiosities. 100+ different cocktails. One of the most unique bar experiences in Europe.', tags:['Antiques','100+ Cocktails'], lat:38.7157, lng:-9.1475, budget:20 },
+          { name:'Damas', rating:4.5, price:'$', desc:'Graça neighborhood bar and music venue. Live music, cheap beer, young Lisboetas, and a terrace with castle views. The heartbeat of new Lisbon.', tags:['Live Music','Graça','Castle Views'], lat:38.7188, lng:-9.1289, budget:15 }
+        ]
+      }
+    },
+    wellness: {
+      'Beaches': {
+        emoji:'🏖', color:'var(--cat-wellness)',
+        places:[
+          { name:'Cascais Beach Day', rating:4.8, price:'$', desc:'40 minutes by train from Cais do Sodré. Cascais and Estoril offer proper Atlantic beaches, excellent seafood, and an escape from the city.', tags:['Train Accessible','Atlantic'], lat:38.6979, lng:-9.4216, budget:15 },
+          { name:'Costa da Caparica', rating:4.6, price:'$', desc:'30km of Atlantic beach south of Lisbon. Bus from Praça de Espanha, surfboard rentals, and beach bars all the way down.', tags:['30km Beach','Surf'], lat:38.6419, lng:-9.2350, budget:15 },
+          { name:'Portinho da Arrábida', rating:4.9, price:'$$', desc:'The most beautiful beach in Portugal — turquoise water, limestone cliffs, and near-zero development. Worth renting a car.', tags:['Most Beautiful','Car Needed'], lat:38.5164, lng:-8.8892, budget:30 }
+        ]
+      },
+      'Spas & Relaxation': {
+        emoji:'🛁', color:'var(--cat-wellness)',
+        places:[
+          { name:'Bairro Alto Hotel Spa', rating:4.8, price:'$$$$', desc:'The finest spa in Lisbon. Jacuzzi with rooftop views, expert treatments, and the full weight of a five-star hotel behind every service.', tags:['Rooftop Jacuzzi','5-Star'], lat:38.7107, lng:-9.1422, budget:150 },
+          { name:'Termas de Monção', rating:4.5, price:'$$$', desc:'Day trip north to ancient thermal springs. Roman baths, natural mineral waters, and treatments that Portuguese people have used for centuries.', tags:['Day Trip','Thermal Springs'], lat:42.0786, lng:-8.4766, budget:60 },
+          { name:'Banhos Quentes de Lisboa', rating:4.4, price:'$$', desc:'City center thermal spa. Pool, sauna, steam room, and massage. A quick reset in the middle of a long day of sightseeing.', tags:['City Center','Quick Reset'], lat:38.7169, lng:-9.1399, budget:35 }
+        ]
+      }
+    }
+  }
+};
+
+// ── INPUT SCREEN SLIDERS ────────────────────────────────────────────────────
+const siCats = ['dining','stays','experiences','social','wellness'];
+let siVals = { dining:30, stays:20, experiences:20, social:15, wellness:15 };
+let siPrev = {...siVals};
+
+function siRender() {
+  const budget = parseInt(document.getElementById('budget-input').value) || 0;
+  siCats.forEach(c => {
+    const v = Math.round(siVals[c]);
+    document.getElementById('si-fill-'+c).style.width = v+'%';
+    document.getElementById('si-thumb-'+c).style.left = v+'%';
+    document.getElementById('si-sl-'+c).value = v;
+    document.getElementById('si-amt-'+c).textContent = '$'+Math.round(budget*v/100).toLocaleString();
+    document.getElementById('si-pct-'+c).textContent = v+'%';
+  });
+  const total = siCats.reduce((s,c)=>s+Math.round(siVals[c]),0);
+  document.getElementById('si-total').textContent = '$'+Math.round(budget*total/100).toLocaleString()+' / $'+budget.toLocaleString();
+}
+
+function siRebalance(moved) {
+  const newVal = parseInt(document.getElementById('si-sl-'+moved).value);
+  const remaining = 100 - newVal;
+  const others = siCats.filter(c=>c!==moved);
+  const otherTotal = others.reduce((s,c)=>s+siVals[c],0);
+  siVals[moved] = newVal;
+  if(otherTotal > 0) {
+    others.forEach(c=>{siVals[c]=Math.max(0,siVals[c]*remaining/otherTotal);});
+    const diff = 100 - siCats.reduce((s,c)=>s+siVals[c],0);
+    const adj = others.filter(c=>siVals[c]>0);
+    if(adj.length) siVals[adj[0]] += diff;
+  } else {
+    others.forEach(c=>{siVals[c]=remaining/others.length;});
+  }
+  siPrev = {...siVals};
+  siRender();
+}
+
+siCats.forEach(c=>{
+  document.getElementById('si-sl-'+c).addEventListener('input',()=>siRebalance(c));
+});
+document.getElementById('budget-input').addEventListener('input',siRender);
+siRender();
+
+function selectCity(city) {
+  document.getElementById('city-input').value = city;
+  document.querySelectorAll('.city-chip').forEach(c=>{
+    c.classList.toggle('selected', c.textContent === city.split(',')[0]);
+  });
+}
+
+// ── GEOLOCATION ─────────────────────────────────────────────────────────────
+function useMyLocation() {
+  const btn = document.getElementById('location-btn');
+  const btnText = document.getElementById('location-btn-text');
+
+  if(!navigator.geolocation) {
+    btnText.textContent = 'Location not supported on this device';
+    return;
+  }
+
+  btnText.textContent = 'Finding your location...';
+  btn.style.borderColor = 'var(--brand)';
+  btn.style.color = 'var(--brand)';
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      state.userLat = latitude;
+      state.userLng = longitude;
+      const nearest = findNearestCity(latitude, longitude);
+      const select = document.getElementById('city-input');
+      select.value = nearest.city;
+      btnText.textContent = nearest.exact
+        ? `📍 Location set to ${nearest.city.split(',')[0]}`
+        : `Nearest city: ${nearest.city.split(',')[0]}`;
+      btn.style.borderColor = 'var(--cat-wellness)';
+      btn.style.color = 'var(--cat-wellness)';
+    },
+    (error) => {
+      btnText.textContent = 'Could not get location — please select a city';
+      btn.style.borderColor = 'var(--cat-dining)';
+      btn.style.color = 'var(--cat-dining)';
+      setTimeout(() => {
+        btnText.textContent = 'Use my current location';
+        btn.style.borderColor = 'var(--rule)';
+        btn.style.color = 'var(--ink-mid)';
+      }, 3000);
+    },
+    { timeout: 8000, maximumAge: 60000 }
+  );
+}
+
+function findNearestCity(lat, lng) {
+  const cityCoords = {
+    'Chicago, IL':      { lat: 41.8827, lng: -87.6233 },
+    'New York, NY':     { lat: 40.7580, lng: -73.9855 },
+    'Lisbon, Portugal': { lat: 38.7169, lng: -9.1399  }
+  };
+
+  let nearest = null;
+  let minDist = Infinity;
+
+  Object.entries(cityCoords).forEach(([city, coords]) => {
+    const dist = Math.sqrt(
+      Math.pow(lat - coords.lat, 2) +
+      Math.pow(lng - coords.lng, 2)
+    );
+    if(dist < minDist) {
+      minDist = dist;
+      nearest = city;
+    }
+  });
+
+  // Consider "exact" if within ~100km
+  const exact = minDist < 1.0;
+  return { city: nearest, exact };
+}
+
+// ── BUILD PLAN ──────────────────────────────────────────────────────────────
+function buildPlan() {
+  const cityInput = document.getElementById('city-input').value;
+  const budget = parseInt(document.getElementById('budget-input').value) || 1500;
+
+  state.city = cityInput;
+  state.budget = budget;
+  state.sliders = {...siVals};
+
+  // Hide input screen, show app
+  document.getElementById('input-screen').style.display = 'none';
+  document.getElementById('top-nav').style.display = 'flex';
+  document.getElementById('main-content').style.display = 'block';
+  document.getElementById('tab-bar').style.display = 'flex';
+
+  // Update display
+  document.getElementById('nav-city').textContent = cityInput.split(',')[0];
+  document.getElementById('disp-city').textContent = cityInput;
+  document.getElementById('disp-duration').textContent = budget < 200 ? 'Night Out' : budget < 800 ? 'Weekend' : budget < 2000 ? 'Short Trip' : 'Full Trip';
+
+  updateBudgetDisplay();
+
+  // Update category cards
+  const cats = ['dining','stays','experiences','social','wellness'];
+  cats.forEach(c => {
+    const pct = Math.round(siVals[c]);
+    const amt = Math.round(budget * pct / 100);
+    const el = document.getElementById('cat-budget-'+c);
+    const pelEl = document.getElementById('cat-pct-'+c);
+    if(el) el.textContent = '$'+amt.toLocaleString();
+    if(pelEl) pelEl.textContent = pct+'% of budget';
+  });
+
+  state.navStack = ['categories'];
+  updateBackBtn();
+}
+
+function updateBudgetDisplay() {
+  const spent = state.itinerary.reduce((sum, item) => sum + (item.cost || 0), 0);
+  const remaining = state.budget - spent;
+  document.getElementById('disp-budget').textContent = '$'+Math.max(0, remaining).toLocaleString();
+  document.getElementById('disp-spent').textContent = '$'+spent.toLocaleString();
+  // Turn red if over budget
+  const header = document.querySelector('.budget-header');
+  if(remaining < 0) {
+    header.style.background = 'linear-gradient(135deg,#c0392b,#922b21)';
+  } else if(remaining < state.budget * 0.1) {
+    header.style.background = 'linear-gradient(135deg,#d4a017,#b8860b)';
+  } else {
+    header.style.background = '';
+    header.style.backgroundColor = 'var(--brand)';
+  }
+}
+
+// ── NAVIGATION ──────────────────────────────────────────────────────────────
+function goBack() {
+  state.navStack.pop();
+  const current = state.navStack[state.navStack.length-1];
+  if(!current || current === 'categories') {
+    showCatGrid();
+  } else if(current.startsWith('subcategories:')) {
+    const catKey = current.split(':')[1];
+    showSubcategories(catKey, false);
+  }
+  updateBackBtn();
+}
+
+function updateBackBtn() {
+  const btn = document.getElementById('back-btn');
+  if(state.navStack.length <= 1) {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg> Edit Plan';
+    btn.onclick = editPlan;
+  } else {
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg> Back';
+    btn.onclick = goBack;
+  }
+}
+
+function editPlan() {
+  document.getElementById('input-screen').style.display = 'block';
+  document.getElementById('top-nav').style.display = 'none';
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('tab-bar').style.display = 'none';
+}
+
+function showCatGrid() {
+  document.getElementById('cat-grid-view').style.display = 'block';
+  document.getElementById('subcat-view').style.display = 'none';
+  document.getElementById('places-view').style.display = 'none';
+}
+
+function openCategory(catKey) {
+  state.navStack.push('subcategories:'+catKey);
+  showSubcategories(catKey, true);
+  updateBackBtn();
+}
+
+const CAT_COLORS = {
+  dining:'var(--cat-dining)', stays:'var(--cat-stays)',
+  experiences:'var(--cat-exp)', social:'var(--cat-social)', wellness:'var(--cat-wellness)'
+};
+const CAT_NAMES = {
+  dining:'Dining', stays:'Stays', experiences:'Experiences', social:'Social', wellness:'Wellness'
+};
+
+function showSubcategories(catKey, animate) {
+  document.getElementById('cat-grid-view').style.display = 'none';
+  document.getElementById('subcat-view').style.display = 'block';
+  document.getElementById('places-view').style.display = 'none';
+
+  const cityData = DATA[state.city];
+  if(!cityData || !cityData[catKey]) return;
+
+  const catData = cityData[catKey];
+  const pct = Math.round(siVals[catKey]);
+  const amt = Math.round(state.budget * pct / 100);
+
+  document.getElementById('subcat-title').textContent = CAT_NAMES[catKey];
+  document.getElementById('subcat-sub').textContent = '$'+amt.toLocaleString()+' allocated · Select a type to explore';
+
+  const list = document.getElementById('subcat-list');
+  list.innerHTML = '';
+
+  Object.entries(catData).forEach(([subcatName, subcatData]) => {
+    const item = document.createElement('div');
+    item.className = 'subcat-item';
+    item.innerHTML = `
+      <div class="subcat-left">
+        <span class="subcat-emoji">${subcatData.emoji}</span>
+        <div>
+          <div class="subcat-name">${subcatName}</div>
+          <div class="subcat-count">${subcatData.places.length} options</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div class="budget-pill">Within budget</div>
+        <span class="subcat-chevron">›</span>
+      </div>
+    `;
+    item.onclick = () => openSubcategory(catKey, subcatName);
+    list.appendChild(item);
+  });
+
+  document.getElementById('main-content').scrollTop = 0;
+}
+
+function openSubcategory(catKey, subcatName) {
+  state.navStack.push('places:'+catKey+':'+subcatName);
+  showPlaces(catKey, subcatName);
+  updateBackBtn();
+}
+
+function showPlaces(catKey, subcatName) {
+  document.getElementById('subcat-view').style.display = 'none';
+  document.getElementById('places-view').style.display = 'block';
+
+  const cityData = DATA[state.city];
+  const subcatData = cityData[catKey][subcatName];
+  const color = CAT_COLORS[catKey];
+  const pct = Math.round(siVals[catKey]);
+  const amt = Math.round(state.budget * pct / 100);
+
+  document.getElementById('places-title').textContent = subcatData.emoji+' '+subcatName;
+  document.getElementById('places-sub').textContent = 'Top rated within your $'+amt.toLocaleString()+' '+CAT_NAMES[catKey].toLowerCase()+' budget';
+
+  const list = document.getElementById('places-list');
+  list.innerHTML = '';
+
+  subcatData.places.forEach((place, i) => {
+    const stars = '★'.repeat(Math.floor(place.rating))+'☆'.repeat(5-Math.floor(place.rating));
+    const inItinerary = state.itinerary.some(item=>item.name===place.name);
+
+    const card = document.createElement('div');
+    card.className = 'place-card';
+    card.id = 'place-card-'+place.name.replace(/\s/g,'_');
+    card.innerHTML = `
+      <div class="place-body">
+        <div class="place-header">
+          <div>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+              <div class="place-rank" style="background:${color}">${i+1}</div>
+              <div class="place-name">${place.name}</div>
+            </div>
+            <div class="place-rating">
+              <span style="color:var(--accent)">★</span>
+              <span>${place.rating}</span>
+              <span style="color:var(--ink-light);font-weight:300;">${stars}</span>
+            </div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.85rem;font-weight:500;color:${color}">${place.price}</div>
+            ${place.budget > 0 ? `<div style="font-size:0.72rem;color:var(--ink-light);">~$${place.budget}</div>` : '<div style="font-size:0.72rem;color:var(--cat-wellness);">Free</div>'}
+          </div>
+        </div>
+        <div class="place-desc">${place.desc}</div>
+        <div class="place-footer">
+          <div class="place-tags">${place.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+          <button class="add-btn ${inItinerary?'added':''}" id="addbtn-${place.name.replace(/\s/g,'_')}"
+            onclick="toggleItinerary(event,'${place.name}','${catKey}','${subcatName}',${place.lat},${place.lng},${place.budget||0})">
+            ${inItinerary ? '✓ Added' : '+ Itinerary'}
+          </button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  document.getElementById('main-content').scrollTop = 0;
+}
+
+// ── ITINERARY ────────────────────────────────────────────────────────────────
+function toggleItinerary(event, name, catKey, subcatName, lat, lng, cost) {
+  event.stopPropagation();
+  const btn = document.getElementById('addbtn-'+name.replace(/\s/g,'_'));
+  const existing = state.itinerary.findIndex(i=>i.name===name);
+
+  if(existing > -1) {
+    state.itinerary.splice(existing,1);
+    if(btn){btn.textContent='+ Itinerary';btn.classList.remove('added');}
+  } else {
+    state.itinerary.push({name, catKey, subcatName, lat, lng, day:1, cost: cost||0});
+    if(btn){btn.textContent='✓ Added';btn.classList.add('added');}
+    const tabIt = document.getElementById('tab-itinerary');
+    tabIt.style.transform='scale(1.1)';
+    setTimeout(()=>tabIt.style.transform='scale(1)',200);
+  }
+  updateBudgetDisplay();
+  renderItinerary();
+}
+
+function renderItinerary() {
+  const empty = document.getElementById('itinerary-empty');
+  const content = document.getElementById('itinerary-content');
+
+  if(state.itinerary.length === 0) {
+    empty.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  content.style.display = 'block';
+
+  // Group by day
+  const byDay = {};
+  state.itinerary.forEach(item => {
+    if(!byDay[item.day]) byDay[item.day] = [];
+    byDay[item.day].push(item);
+  });
+
+  const daysEl = document.getElementById('itinerary-days');
+  daysEl.innerHTML = '';
+
+  Object.entries(byDay).forEach(([day, items]) => {
+    const section = document.createElement('div');
+    section.className = 'day-section';
+    section.innerHTML = `
+      <div class="day-header">
+        <span style="font-family:'Cormorant Garamond',serif;">Day ${day}</span>
+        <span class="day-label">${items.length} stop${items.length!==1?'s':''}</span>
+      </div>
+    `;
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'itinerary-item';
+      row.innerHTML = `
+        <div class="itinerary-item-left">
+          <div class="itinerary-cat-dot" style="background:${CAT_COLORS[item.catKey]}"></div>
+          <div>
+            <div class="itinerary-name">${item.name}</div>
+            <div class="itinerary-sub">${CAT_NAMES[item.catKey]} · ${item.subcatName}${item.cost > 0 ? ' · ~$'+item.cost : ' · Free'}</div>
+          </div>
+        </div>
+        <button class="remove-btn" onclick="removeFromItinerary('${item.name}')">✕</button>
+      `;
+      section.appendChild(row);
+    });
+    daysEl.appendChild(section);
+  });
+}
+
+function removeFromItinerary(name) {
+  const idx = state.itinerary.findIndex(i=>i.name===name);
+  if(idx>-1) state.itinerary.splice(idx,1);
+  const btn = document.getElementById('addbtn-'+name.replace(/\s/g,'_'));
+  if(btn){btn.textContent='+ Itinerary';btn.classList.remove('added');}
+  updateBudgetDisplay();
+  renderItinerary();
+}
+
+function clearItinerary() {
+  state.itinerary = [];
+  document.querySelectorAll('.add-btn.added').forEach(btn=>{
+    btn.textContent='+ Itinerary';btn.classList.remove('added');
+  });
+  updateBudgetDisplay();
+  renderItinerary();
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tab+'-view').classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  state.activeTab = tab;
+
+  if(tab === 'map') initMap();
+  if(tab === 'itinerary') renderItinerary();
+}
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+function initMap() {
+  const cityGeo = CITIES[state.city];
+  if(!cityGeo) return;
+
+  if(state.map) {
+    state.map.remove();
+    state.map = null;
+  }
+
+  setTimeout(() => {
+    const mapEl = document.getElementById('leaflet-map');
+    if(!mapEl) return;
+
+    state.map = L.map('leaflet-map', {
+      center: [cityGeo.lat, cityGeo.lng],
+      zoom: cityGeo.zoom,
+      zoomControl: true,
+      scrollWheelZoom: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(state.map);
+
+    setTimeout(() => { state.map.invalidateSize(); }, 200);
+
+    const cityData = DATA[state.city];
+    if(!cityData) return;
+
+    const catColors = {
+      dining:'#E07A5F', stays:'#2C5F8C',
+      experiences:'#6B7A8D', social:'#C8A96A', wellness:'#81B29A'
+    };
+
+    Object.entries(cityData).forEach(([catKey, catData]) => {
+      Object.entries(catData).forEach(([subcatName, subcatData]) => {
+        subcatData.places.forEach(place => {
+          if(!place.lat || !place.lng) return;
+          const color = catColors[catKey];
+          const icon = L.divIcon({
+            html:`<div style="width:12px;height:12px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>`,
+            className:'',
+            iconSize:[12,12],
+            iconAnchor:[6,6]
+          });
+          const marker = L.marker([place.lat, place.lng], {icon}).addTo(state.map);
+          marker.on('click', () => showMapSheet(place, catKey, subcatName, color));
+        });
+      });
+    });
+  }, 100);
+}
+
+function showMapSheet(place, catKey, subcatName, color) {
+  const sheet = document.getElementById('map-sheet');
+  const content = document.getElementById('sheet-content');
+  const inItinerary = state.itinerary.some(i=>i.name===place.name);
+
+  content.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.75rem;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500;color:var(--ink);">${place.name}</div>
+        <div style="font-size:0.75rem;color:${color};font-weight:500;text-transform:uppercase;letter-spacing:0.06em;">${CAT_NAMES[catKey]} · ${subcatName}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="color:var(--accent);font-weight:500;">★ ${place.rating}</div>
+        <div style="font-size:0.8rem;color:var(--ink-light);">${place.price}</div>
+      </div>
+    </div>
+    <div style="font-size:0.85rem;color:var(--ink-mid);line-height:1.6;margin-bottom:1rem;">${place.desc}</div>
+    <button class="add-btn ${inItinerary?'added':''}" id="map-addbtn-${place.name.replace(/\s/g,'_')}"
+      onclick="toggleItinerary(event,'${place.name}','${catKey}','${subcatName}',${place.lat},${place.lng},${place.budget||0})" style="width:100%;justify-content:center;">
+      ${inItinerary ? '✓ Added to Itinerary' : '+ Add to Itinerary'}
+    </button>
+  `;
+  sheet.classList.add('visible');
+}
+
+function closeSheet() {
+  document.getElementById('map-sheet').classList.remove('visible');
+}
+
+document.getElementById('map-view').addEventListener('click', e => {
+  if(e.target === document.getElementById('map-view') || e.target === document.getElementById('leaflet-map')) closeSheet();
+});
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast-el');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── LOCALSTORAGE ───────────────────────────────────────────────────────────
+function saveState() {
+  try { localStorage.setItem('sojourn_v2', JSON.stringify({ city: state.city, budget: state.budget, sliders: siVals, itinerary: state.itinerary, favorites: state.favorites || [] })); } catch(e) {}
+}
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('sojourn_v2')); } catch(e) { return null; }
+}
+state.favorites = state.favorites || [];
+
+// ── TIME OF DAY ────────────────────────────────────────────────────────────
+function getTOD() {
+  const h = new Date().getHours();
+  if(h >= 5 && h < 11) return 'morning';
+  if(h >= 11 && h < 17) return 'afternoon';
+  if(h >= 17 && h < 21) return 'evening';
+  return 'night';
+}
+const TOD = {
+  morning: { cls:'time-morning', text:'🌅 Good morning — breakfast and wellness highlighted' },
+  afternoon: { cls:'time-afternoon', text:'☀️ Good afternoon — experiences and dining highlighted' },
+  evening: { cls:'time-evening', text:'🌇 Good evening — dining and social scene highlighted' },
+  night: { cls:'time-night', text:'🌙 Late night — social scene and bars highlighted' }
+};
+function renderTimeBanner() {
+  const t = getTOD(), cfg = TOD[t], el = document.getElementById('time-banner');
+  el.className = 'time-banner ' + cfg.cls;
+  el.textContent = cfg.text;
+}
+
+// ── RESULT SLIDERS ─────────────────────────────────────────────────────────
+const rsCats = ['dining','stays','experiences','social','wellness'];
+let rsVals = { dining:30, stays:20, experiences:20, social:15, wellness:15 };
+
+function syncRS() {
+  rsCats.forEach(c => {
+    const v = Math.round(rsVals[c]);
+    document.getElementById('rs-fill-'+c).style.width = v+'%';
+    document.getElementById('rs-thumb-'+c).style.left = v+'%';
+    document.getElementById('rs-sl-'+c).value = v;
+    document.getElementById('rs-amt-'+c).textContent = '$'+Math.round(state.budget*v/100).toLocaleString();
+    document.getElementById('rs-pct-'+c).textContent = v+'%';
+    const cb = document.getElementById('cat-budget-'+c);
+    const cp = document.getElementById('cat-pct-'+c);
+    if(cb) cb.textContent = '$'+Math.round(state.budget*v/100).toLocaleString();
+    if(cp) cp.textContent = v+'% of budget';
+  });
+  saveState();
+}
+function rsRebalance(moved) {
+  const v = parseInt(document.getElementById('rs-sl-'+moved).value);
+  const rem = 100-v, others = rsCats.filter(c=>c!==moved), ot = others.reduce((s,c)=>s+rsVals[c],0);
+  rsVals[moved] = v;
+  if(ot > 0) { others.forEach(c=>{rsVals[c]=Math.max(0,rsVals[c]*rem/ot);}); const diff=100-rsCats.reduce((s,c)=>s+rsVals[c],0); const adj=others.filter(c=>rsVals[c]>0); if(adj.length) rsVals[adj[0]]+=diff; }
+  else { others.forEach(c=>{rsVals[c]=rem/others.length;}); }
+  syncRS();
+  siVals = {...rsVals};
+  updateBudgetDisplay();
+}
+rsCats.forEach(c => { document.getElementById('rs-sl-'+c).addEventListener('input', () => rsRebalance(c)); });
+
+function toggleAdj() {
+  const body = document.getElementById('adj-body'), icon = document.getElementById('adj-icon');
+  const open = body.classList.toggle('open');
+  icon.textContent = open ? '▲' : '▼';
+}
+
+// ── DISTANCE ───────────────────────────────────────────────────────────────
+function distMiles(lat1, lng1, lat2, lng2) {
+  const R=3959, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function centerOnMe() {
+  if(!state.userLat || !state.map) { showToast('Enable location to use Near Me'); return; }
+  state.map.setView([state.userLat, state.userLng], 15);
+  L.marker([state.userLat, state.userLng], {icon: L.divIcon({html:'<div style="width:14px;height:14px;background:#2C5F8C;border:3px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.4)"></div>',className:'',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(state.map).bindPopup('You are here').openPopup();
+}
+
+// ── FAVORITES ──────────────────────────────────────────────────────────────
+function toggleFav(event, name) {
+  event.stopPropagation();
+  if (!state.favorites) state.favorites = [];
+  const btn = document.getElementById('fav-'+name.replace(/\W/g,'_'));
+  const idx = state.favorites.indexOf(name);
+  if(idx > -1) { state.favorites.splice(idx,1); if(btn){btn.classList.remove('loved');btn.textContent='♡';} showToast('Removed from favorites'); }
+  else { state.favorites.push(name); if(btn){btn.classList.add('loved');btn.textContent='♥';} showToast('♥ Saved to favorites'); }
+  saveState();
+}
+
+// ── BOOKING URL ────────────────────────────────────────────────────────────
+function bookingUrl(place, cat) {
+  const n = encodeURIComponent(place.name), c = encodeURIComponent(state.city.split(',')[0]);
+  if(cat==='dining') return 'https://www.opentable.com/s?term='+n;
+  if(cat==='stays') return 'https://www.booking.com/searchresults.html?ss='+n+'+'+c;
+  if(cat==='experiences') return 'https://www.viator.com/search?text='+n+'+'+c;
+  return 'https://www.yelp.com/search?find_desc='+n+'&find_loc='+c;
+}
+
+// ── ENHANCED showPlaces WITH NEW FEATURES ─────────────────────────────────
+// Override the existing showPlaces to add booking, favorites, distance
+const _origShowSubcategories = showSubcategories;
+function enhancedShowPlaces(catKey, subcatName) {
+  const cityData = DATA[state.city];
+  if(!cityData || !cityData[catKey] || !cityData[catKey][subcatName]) return;
+  const subcatData = cityData[catKey][subcatName];
+  const color = {dining:'#E07A5F',stays:'#2C5F8C',experiences:'#6B7A8D',social:'#C8A96A',wellness:'#81B29A'}[catKey];
+  const catNames = {dining:'Dining',stays:'Stays',experiences:'Experiences',social:'Social',wellness:'Wellness'};
+  const pct = Math.round(rsVals[catKey] || siVals[catKey] || 20);
+  const amt = Math.round(state.budget * pct / 100);
+  document.getElementById('places-title').textContent = subcatData.emoji + ' ' + subcatName;
+  document.getElementById('places-sub').textContent = 'Top rated within your $'+amt.toLocaleString()+' '+catNames[catKey].toLowerCase()+' budget';
+  const list = document.getElementById('places-list'); list.innerHTML = '';
+  subcatData.places.forEach((place, i) => {
+    const inIt = state.itinerary.some(x=>x.name===place.name);
+    const inFav = state.favorites && state.favorites.includes(place.name);
+    const dist = state.userLat && place.lat ? distMiles(state.userLat, state.userLng, place.lat, place.lng) : null;
+    const distStr = dist ? (dist < 1 ? Math.round(dist*5280)+' ft' : dist.toFixed(1)+' mi') : '';
+    const bUrl = bookingUrl(place, catKey);
+    const card = document.createElement('div');
+    card.className = 'place-card';
+    card.innerHTML = `<div class="place-body">
+      <div class="place-header">
+        <div style="display:flex;align-items:flex-start;gap:0.6rem;">
+          <div class="place-rank" style="background:${color}">${i+1}</div>
+          <div>
+            <div class="place-name">${place.name}</div>
+            <div class="place-rating">★ ${place.rating}${distStr ? ' &nbsp;·&nbsp; <span class="dist-tag">📍 '+distStr+'</span>' : ''}</div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:0.85rem;font-weight:500;color:${color}">${place.price}</div>
+          ${place.budget > 0 ? `<div style="font-size:0.7rem;color:var(--ink-light);">~$${place.budget}</div>` : '<div style="font-size:0.7rem;color:var(--cat-wellness);">Free</div>'}
+        </div>
+      </div>
+      <div class="place-desc">${place.desc}</div>
+      <div class="place-footer">
+        <div class="place-tags">${place.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+          <button class="fav-btn ${inFav?'loved':''}" id="fav-${place.name.replace(/\W/g,'_')}" onclick="toggleFav(event,'${place.name}')">${inFav?'♥':'♡'}</button>
+          <a class="book-btn" href="${bUrl}" target="_blank">Book ↗</a>
+          <button class="add-btn ${inIt?'added':''}" id="addbtn-${place.name.replace(/\s/g,'_')}" onclick="toggleItinerary(event,'${place.name}','${catKey}','${subcatName}',${place.lat},${place.lng},${place.budget||0})">${inIt?'✓ Added':'+ Itinerary'}</button>
+        </div>
+      </div>
+    </div>`;
+    list.appendChild(card);
+  });
+  document.getElementById('main-content').scrollTop = 0;
+}
+
+// Patch openSubcategory to use enhanced version
+function openSubcategoryEnhanced(catKey, subcatName) {
+  state.navStack.push('places:'+catKey+':'+subcatName);
+  document.getElementById('subcat-view').style.display = 'none';
+  document.getElementById('places-view').style.display = 'block';
+  enhancedShowPlaces(catKey, subcatName);
+  updateBackBtn();
+}
+
+// Patch showSubcategories to wire subcategory items to enhanced place view
+(function() {
+  const orig = showSubcategories;
+  window.showSubcategories = function(catKey, push) {
+    orig(catKey, push);
+    setTimeout(() => {
+      const cd = DATA[state.city] && DATA[state.city][catKey];
+      if(!cd) return;
+      const subcats = Object.keys(cd);
+      document.querySelectorAll('.subcat-item').forEach((item, idx) => {
+        if(subcats[idx]) { item.onclick = () => openSubcategory(catKey, subcats[idx]); }
+      });
+    }, 30);
+  };
+})();
+
+// ── SEARCH ─────────────────────────────────────────────────────────────────
+function doSearch(q) {
+  const el = document.getElementById('srch-results');
+  if(!q || q.length < 2) { el.innerHTML = '<div class="srch-empty"><div style="font-size:2rem;opacity:0.3;margin-bottom:0.5rem;">🔍</div><div style="font-size:0.88rem;">Search restaurants, bars, hotels and more</div></div>'; return; }
+  const results = []; const lq = q.toLowerCase();
+  const cd = DATA[state.city]; if(!cd) return;
+  const catNames = {dining:'Dining',stays:'Stays',experiences:'Experiences',social:'Social',wellness:'Wellness'};
+  const catColors = {dining:'#E07A5F',stays:'#2C5F8C',experiences:'#6B7A8D',social:'#C8A96A',wellness:'#81B29A'};
+  Object.entries(cd).forEach(([cat, catData]) => {
+    Object.entries(catData).forEach(([sub, subData]) => {
+      subData.places.forEach(p => {
+        if(p.name.toLowerCase().includes(lq) || p.desc.toLowerCase().includes(lq) || p.tags.some(t=>t.toLowerCase().includes(lq)) || sub.toLowerCase().includes(lq)) {
+          results.push({...p, cat, sub});
+        }
+      });
+    });
+  });
+  if(!results.length) { el.innerHTML = '<div class="srch-empty"><div style="font-size:1.5rem;opacity:0.4;margin-bottom:0.5rem;">😕</div><div>No results for "'+q+'"</div></div>'; return; }
+  el.innerHTML = '<div style="font-size:0.75rem;color:var(--ink-light);margin-bottom:0.65rem;">'+results.length+' result'+(results.length!==1?'s':'')+'</div>';
+  results.forEach(p => {
+    const inIt = state.itinerary.some(x=>x.name===p.name);
+    const bUrl = bookingUrl(p, p.cat);
+    const item = document.createElement('div'); item.className = 'srch-result';
+    item.innerHTML = `<div class="srch-result-top"><div class="srch-name">${p.name}</div><span class="srch-pill" style="background:${catColors[p.cat]}">${catNames[p.cat]}</span></div><div class="srch-meta">★ ${p.rating} · ${p.price}${p.budget>0?' · ~$'+p.budget:' · Free'} · ${p.sub}</div><div class="srch-desc">${p.desc}</div><div style="display:flex;gap:0.4rem;margin-top:0.6rem;"><a class="book-btn" href="${bUrl}" target="_blank">Book ↗</a><button class="add-btn ${inIt?'added':''}" id="sadd-${p.name.replace(/\W/g,'_')}" onclick="toggleItinerary(event,'${p.name}','${p.cat}','${p.sub}',${p.lat||0},${p.lng||0},${p.budget||0})">${inIt?'✓ Added':'+ Itinerary'}</button></div>`;
+    el.appendChild(item);
+  });
+}
+
+// ── SURPRISE ME ────────────────────────────────────────────────────────────
+function surpriseMe() {
+  const tod = getTOD();
+  const todCats = {morning:['dining','wellness'],afternoon:['experiences','dining'],evening:['dining','social'],night:['social','dining']};
+  const cats = todCats[tod] || ['dining','experiences'];
+  const cd = DATA[state.city]; if(!cd) return;
+  const catColors = {dining:'#E07A5F',stays:'#2C5F8C',experiences:'#6B7A8D',social:'#C8A96A',wellness:'#81B29A'};
+  const catNames = {dining:'Dining',stays:'Stays',experiences:'Experiences',social:'Social',wellness:'Wellness'};
+  const catEmoji = {dining:'🍽',stays:'🏨',experiences:'🎭',social:'🥂',wellness:'🧘'};
+  let best = null, bestRating = 0;
+  cats.forEach(cat => {
+    if(!cd[cat]) return;
+    Object.entries(cd[cat]).forEach(([sub, data]) => {
+      data.places.forEach(p => { if(p.rating > bestRating) { bestRating = p.rating; best = {...p, cat, sub}; } });
+    });
+  });
+  if(!best) return;
+  const inIt = state.itinerary.some(x=>x.name===best.name);
+  const bUrl = bookingUrl(best, best.cat);
+  document.getElementById('surp-content').innerHTML = `<div class="surp-badge">${catEmoji[best.cat]} ${catNames[best.cat]} · ${best.sub}</div><div class="surp-name">${best.name}</div><div class="surp-rating">★ ${best.rating} · ${best.price}${best.budget>0?' · ~$'+best.budget:' · Free'}</div><div class="surp-desc">${best.desc}</div><div class="surp-acts"><a class="surp-book" href="${bUrl}" target="_blank">Book Now ↗</a><button class="surp-add ${inIt?'added':''}" id="surp-add-btn" onclick="surpAdd('${best.name}','${best.cat}','${best.sub}',${best.lat||0},${best.lng||0},${best.budget||0})">${inIt?'✓ Added':'+ Add to Itinerary'}</button></div>`;
+  document.getElementById('surp-overlay').classList.add('open');
+}
+function surpAdd(name, cat, sub, lat, lng, cost) {
+  const inIt = state.itinerary.some(x=>x.name===name);
+  if(!inIt) { state.itinerary.push({name,cat,sub,lat,lng,cost,day:1}); updateBudgetDisplay(); renderItinerary(); saveState(); showToast('✓ Added to itinerary'); const btn=document.getElementById('surp-add-btn'); if(btn){btn.textContent='✓ Added';btn.classList.add('added');} }
+}
+function closeSurprise(e) {
+  if(!e || e.target === document.getElementById('surp-overlay')) document.getElementById('surp-overlay').classList.remove('open');
+}
+
+// ── SHARE & EXPORT ─────────────────────────────────────────────────────────
+function sharePlan() {
+  const data = { city: state.city, budget: state.budget, itinerary: state.itinerary };
+  const encoded = btoa(JSON.stringify(data));
+  const url = window.location.href.split('#')[0] + '#shared=' + encoded;
+  if(navigator.share) { navigator.share({ title:'My Sojourn Plan', url }); }
+  else { navigator.clipboard.writeText(url).then(() => showToast('🔗 Link copied!')).catch(() => showToast('Copy this URL: '+url.substring(0,40)+'...')); }
+}
+function exportPDF() { showToast('📄 Opening print view...'); setTimeout(() => window.print(), 400); }
+
+// ── ENHANCED ITINERARY RENDER ──────────────────────────────────────────────
+function updateBudgetSummary() {
+  const spent = state.itinerary.reduce((s,i)=>s+(i.cost||0),0);
+  const bsEl = document.getElementById('bsummary');
+  if(bsEl) {
+    document.getElementById('bs-total').textContent = '$'+state.budget.toLocaleString();
+    document.getElementById('bs-spent').textContent = '$'+spent.toLocaleString();
+    document.getElementById('bs-left').textContent = '$'+Math.max(0,state.budget-spent).toLocaleString();
+  }
+}
+
+// ── LOAD SAVED STATE ON START ──────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = loadState();
+  if(saved && saved.city) {
+    state.city = saved.city;
+    state.budget = saved.budget || 1500;
+    state.itinerary = saved.itinerary || [];
+    state.favorites = saved.favorites || [];
+    if(saved.sliders) { siVals = {...saved.sliders}; rsVals = {...saved.sliders}; }
+    document.getElementById('city-input').value = state.city;
+    document.getElementById('budget-input').value = state.budget;
+    Object.keys(siVals).forEach(c => {
+      const s = document.getElementById('si-sl-'+c); if(s) s.value = siVals[c];
+    });
+    siRender();
+    buildPlan();
+    updateBudgetSummary();
+    showToast('Welcome back to '+state.city.split(',')[0]+'!');
+    return;
+  }
+  syncRS();
+  renderTimeBanner();
+});
+
+// Patch renderItinerary to also update budget summary — safe version
+(function() {
+  const orig = renderItinerary;
+  window.renderItinerary = function() {
+    orig();
+    updateBudgetSummary();
+    saveState();
+  };
+})();
+
+// Patch buildPlan to sync sliders and save
+(function() {
+  const orig = buildPlan;
+  window.buildPlan = function() {
+    rsVals = {...siVals};
+    syncRS();
+    orig();
+    renderTimeBanner();
+    saveState();
+  };
+})();
+
+// Patch switchTab to render itinerary when switching to it
+(function() {
+  const orig = switchTab;
+  window.switchTab = function(tab) {
+    orig(tab);
+    if(tab === 'itinerary') { renderItinerary(); updateBudgetSummary(); }
+  };
+})();
+
+// Patch toggleItinerary to show toast and save
+(function() {
+  const orig = toggleItinerary;
+  window.toggleItinerary = function(event, name, catKey, subcatName, lat, lng, cost) {
+    orig(event, name, catKey, subcatName, lat, lng, cost);
+    saveState();
+  };
+})();
+
+// Patch openSubcategory to use enhanced place cards
+(function() {
+  const orig = openSubcategory;
+  window.openSubcategory = function(catKey, subcatName) {
+    state.navStack.push('places:'+catKey+':'+subcatName);
+    document.getElementById('subcat-view').style.display = 'none';
+    document.getElementById('places-view').style.display = 'block';
+    enhancedShowPlaces(catKey, subcatName);
+    updateBackBtn();
+  };
+})();
+
+</script>
+</body>
+</html>
